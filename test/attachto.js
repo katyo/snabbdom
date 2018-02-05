@@ -1,8 +1,9 @@
 var assert = require('assert');
 var snabbdom = require('../snabbdom');
-var toVNode = require('../tovnode').default;
 
-var patch = snabbdom.init([]);
+var vdom = snabbdom.init([]);
+var read = vdom.read;
+var patch = vdom.patch;
 var attachTo = require('../helpers/attachto').default;
 var h = require('../h').default;
 
@@ -10,7 +11,7 @@ describe('attachTo', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = toVNode(elm);
+    vnode0 = read(elm);
   });
   it('adds element to target', function() {
     var vnode1 = h('div', [

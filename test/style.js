@@ -3,17 +3,18 @@ var fakeRaf = require('fake-raf');
 
 var snabbdom = require('../snabbdom');
 fakeRaf.use();
-var patch = snabbdom.init([
+var vdom = snabbdom.init([
   require('../modules/style').default,
 ]);
+var read = vdom.read;
+var patch = vdom.patch;
 var h = require('../h').default;
-var toVNode = require('../tovnode').default;
 
 describe('style', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = toVNode(elm);
+    vnode0 = read(elm);
   });
   it('is being styled', function() {
     elm = patch(vnode0, h('div', {style: {fontSize: '12px'}})).elm;
@@ -102,7 +103,7 @@ describe('style', function() {
   it('updates delayed styles in next frame', function() {
     var patch = snabbdom.init([
       require('../modules/style').default,
-    ]);
+    ]).patch;
     var vnode1 = h('i', {style: {fontSize: '14px', delayed: {fontSize: '16px'}}});
     var vnode2 = h('i', {style: {fontSize: '18px', delayed: {fontSize: '20px'}}});
     elm = patch(vnode0, vnode1).elm;
@@ -116,13 +117,13 @@ describe('style', function() {
     fakeRaf.step();
     assert.equal(elm.style.fontSize, '20px');
   });
-  describe('using toVNode()', function () {
+  describe('using read()', function () {
     it('handles (ignoring) comment nodes', function() {
       var comment = document.createComment('yolo');
       var prevElm = document.createElement('div');
       prevElm.appendChild(comment);
       var nextVNode = h('div', [h('span', 'Hi')]);
-      elm = patch(toVNode(prevElm), nextVNode).elm;
+      elm = patch(read(prevElm), nextVNode).elm;
       assert.strictEqual(elm, prevElm);
       assert.equal(elm.tagName, 'DIV');
       assert.strictEqual(elm.childNodes.length, 1);

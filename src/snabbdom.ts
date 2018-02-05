@@ -56,7 +56,12 @@ function createKeyToOldIdx(children: Array<VNode>, beginIdx: number, endIdx: num
 
 const hooks: (keyof Module)[] = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
 
-export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
+export interface VDOMAPI {
+  read(node: Node): VNode;
+  patch(oldVNode: VNode, newVNode: VNode): VNode;
+}
+
+export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI {
   let i: number, j: number, cbs = ({} as ModuleHooks);
 
   const api: DOMAPI = domApi !== undefined ? domApi : htmlDomApi;
@@ -288,7 +293,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
     }
   }
 
-  return function patch(oldVnode: VNode, vnode: VNode): VNode {
+  function patch(oldVnode: VNode, vnode: VNode): VNode {
     let i: number, elm: Node, parent: Node;
     const insertedVnodeQueue: VNodeQueue = [];
     for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i]();
@@ -313,4 +318,40 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
     for (i = 0; i < cbs.post.length; ++i) cbs.post[i]();
     return vnode;
   };
+
+  function read(node: Node): VNode {
+    let text: string;
+    if (api.isElement(node)) {
+      const id = node.id ? '#' + node.id : '';
+      const cn = node.getAttribute('class');
+      const c = cn ? '.' + cn.split(' ').join('.') : '';
+      const sel = api.tagName(node).toLowerCase() + id + c;
+      const attrs: any = {};
+      const children: Array<VNode> = [];
+      let name: string;
+      let i: number, n: number;
+      const elmAttrs = node.attributes;
+      const elmChildren = node.childNodes;
+      for (i = 0, n = elmAttrs.length; i < n; i++) {
+        name = elmAttrs[i].nodeName;
+        if (name !== 'id' && name !== 'class') {
+          attrs[name] = elmAttrs[i].nodeValue;
+        }
+      }
+      for (i = 0, n = elmChildren.length; i < n; i++) {
+        children.push(read(elmChildren[i]));
+      }
+      return vnode(sel, {attrs}, children, undefined, node);
+    } else if (api.isText(node)) {
+      text = api.getTextContent(node) as string;
+      return vnode(undefined, undefined, undefined, text, node);
+    } else if (api.isComment(node)) {
+      text = api.getTextContent(node) as string;
+      return vnode('!', {}, [], text, node as any);
+    } else {
+      return vnode('', {}, [], undefined, node as any);
+    }
+  }
+
+  return {read, patch};
 }

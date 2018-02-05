@@ -30,7 +30,6 @@
         "src/snabbdom.bundle.ts",
         "src/snabbdom.ts",
         "src/thunk.ts",
-        "src/tovnode.ts",
         "src/vnode.ts"
     ]
 }
