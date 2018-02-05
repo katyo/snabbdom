@@ -1,5 +1,6 @@
 import vnode, {VNode} from './vnode';
-import htmlDomApi, {DOMAPI} from './htmldomapi';
+import { DOMAPI } from './snabbdom';
+import htmlDomApi from './htmldomapi';
 
 export function toVNode(node: Node, domApi?: DOMAPI): VNode {
   const api: DOMAPI = domApi !== undefined ? domApi : htmlDomApi;
