@@ -26,7 +26,6 @@
         "src/h.ts",
         "src/htmldomapi.ts",
         "src/hooks.ts",
-        "src/is.ts",
         "src/snabbdom.bundle.ts",
         "src/snabbdom.ts",
         "src/thunk.ts",

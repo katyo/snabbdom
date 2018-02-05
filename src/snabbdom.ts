@@ -2,7 +2,6 @@
 import {Module} from './modules/module';
 import {Hooks} from './hooks';
 import vnode, {VNode, VNodeData, Key} from './vnode';
-import * as is from './is';
 import htmlDomApi from './htmldomapi';
 
 export interface DOMAPI {
@@ -23,7 +22,11 @@ export interface DOMAPI {
   isComment: (node: Node) => node is Comment;
 }
 
-function isUndef(s: any): boolean { return s === undefined; }
+export const {isArray} = Array;
+export function isPrimitive(s: any): s is (string | number | boolean) {
+  const t = (typeof s)[0];
+  return t == 's' || t == 'n' || t == 'b';
+}
 function isDef(s: any): boolean { return s !== undefined; }
 
 type VNodeQueue = Array<VNode>;
@@ -95,7 +98,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI 
     }
     let children = vnode.children, sel = vnode.sel;
     if (sel === '!') {
-      if (isUndef(vnode.text)) {
+      if (!isDef(vnode.text)) {
         vnode.text = '';
       }
       vnode.elm = api.createComment(vnode.text as string);
@@ -111,14 +114,14 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI 
       if (hash < dot) elm.setAttribute('id', sel.slice(hash + 1, dot));
       if (dotIdx > 0) elm.setAttribute('class', sel.slice(dot + 1).replace(/\./g, ' '));
       for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyNode, vnode);
-      if (is.array(children)) {
+      if (isArray(children)) {
         for (i = 0; i < children.length; ++i) {
           const ch = children[i];
           if (ch != null) {
             api.appendChild(elm, createElm(ch as VNode, insertedVnodeQueue));
           }
         }
-      } else if (is.primitive(vnode.text)) {
+      } else if (isPrimitive(vnode.text)) {
         api.appendChild(elm, api.createTextNode(vnode.text));
       }
       i = (vnode.data as VNodeData).hook; // Reuse variable
@@ -234,7 +237,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI 
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
         }
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
-        if (isUndef(idxInOld)) { // New element
+        if (!isDef(idxInOld)) { // New element
           api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           newStartVnode = newCh[++newStartIdx];
         } else {
@@ -274,7 +277,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI 
       i = vnode.data.hook;
       if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode);
     }
-    if (isUndef(vnode.text)) {
+    if (!isDef(vnode.text)) {
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh as Array<VNode>, ch as Array<VNode>, insertedVnodeQueue);
       } else if (isDef(ch)) {
