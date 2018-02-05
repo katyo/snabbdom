@@ -73,6 +73,7 @@ var patch = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/eventlisteners').default, // attaches event listeners
 ]);
 var h = require('snabbdom/h').default; // helper function for creating vnodes
+var toVNode = require('snabbdom/tovnode').default;
 
 var container = document.getElementById('container');
 
@@ -82,7 +83,7 @@ var vnode = h('div#container.two.classes', {on: {click: someFn}}, [
   h('a', {props: {href: '/foo'}}, 'I\'ll take you places!')
 ]);
 // Patch into empty DOM element – this modifies the DOM as a side effect
-patch(container, vnode);
+patch(toVNode(container), vnode);
 
 var newVnode = h('div#container.two.classes', {on: {click: anotherEventHandler}}, [
   h('span', {style: {fontWeight: 'normal', fontStyle: 'italic'}}, 'This is now italic type'),
@@ -121,16 +122,14 @@ var patch = snabbdom.init([
 ### `patch`
 
 The `patch` function returned by `init` takes two arguments. The first
-is a DOM element or a vnode representing the current view. The second
-is a vnode representing the new, updated view.
+is vnode representing the current view. The second is a vnode
+representing the new, updated view.
 
-If a DOM element with a parent is passed, `newVnode` will be turned
-into a DOM node, and the passed element will be replaced by the
-created DOM node. If an old vnode is passed, Snabbdom will efficiently
-modify it to match the description in the new vnode.
+Snabbdom will efficiently modify DOM nodes to match the description
+in the new vnode.
 
 Any old vnode passed must be the resulting vnode from a previous call
-to `patch`. This is necessary since Snabbdom stores information in the
+to `patch` or `toVNode`. This is necessary since Snabbdom stores information in the
 vnode. This makes it possible to implement a simpler and more
 performant architecture. This also avoids the creation of a new old
 vnode tree.

@@ -34,10 +34,6 @@ function sameVnode(vnode1: VNode, vnode2: VNode): boolean {
   return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
 
-function isVnode(vnode: any): vnode is VNode {
-  return vnode.sel !== undefined;
-}
-
 type KeyToIndexMap = {[key: string]: number};
 
 type ArraysOf<T> = {
@@ -76,12 +72,6 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
         (cbs[hooks[i]] as Array<any>).push(hook);
       }
     }
-  }
-
-  function emptyNodeAt(elm: Element) {
-    const id = elm.id ? '#' + elm.id : '';
-    const c = elm.className ? '.' + elm.className.split(' ').join('.') : '';
-    return vnode(api.tagName(elm).toLowerCase() + id + c, {}, [], undefined, elm);
   }
 
   function createRmCb(childElm: Node, listeners: number) {
@@ -301,14 +291,10 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
     }
   }
 
-  return function patch(oldVnode: VNode | Element, vnode: VNode): VNode {
+  return function patch(oldVnode: VNode, vnode: VNode): VNode {
     let i: number, elm: Node, parent: Node;
     const insertedVnodeQueue: VNodeQueue = [];
     for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i]();
-
-    if (!isVnode(oldVnode)) {
-      oldVnode = emptyNodeAt(oldVnode);
-    }
 
     if (sameVnode(oldVnode, vnode)) {
       patchVnode(oldVnode, vnode, insertedVnodeQueue);

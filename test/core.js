@@ -32,7 +32,7 @@ describe('snabbdom', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
   });
   describe('hyperscript', function() {
     it('can create vnode with proper tag', function() {
@@ -80,9 +80,9 @@ describe('snabbdom', function() {
     });
     it('has different tag and id', function() {
       var elm = document.createElement('div');
-      vnode0.appendChild(elm);
+      vnode0.elm.appendChild(elm);
       var vnode1 = h('span#id');
-      elm = patch(elm, vnode1).elm;
+      elm = patch(toVNode(elm), vnode1).elm;
       assert.equal(elm.tagName, 'SPAN');
       assert.equal(elm.id, 'id');
     });
@@ -173,7 +173,7 @@ describe('snabbdom', function() {
       if (typeof frame.srcdoc !== 'undefined') {
         frame.srcdoc = "<div>Thing 1</div>";
         frame.onload = function() {
-          patch(frame.contentDocument.body.querySelector('div'), h('div', 'Thing 2'));
+          patch(toVNode(frame.contentDocument.body.querySelector('div')), h('div', 'Thing 2'));
           assert.equal(frame.contentDocument.body.querySelector('div').textContent, 'Thing 2');
           frame.remove();
           done();
@@ -188,7 +188,7 @@ describe('snabbdom', function() {
       elmWithIdAndClass.id = 'id';
       elmWithIdAndClass.className = 'class';
       var vnode1 = h('div#id.class', [h('span', 'Hi')]);
-      elm = patch(elmWithIdAndClass, vnode1).elm;
+      elm = patch(toVNode(elmWithIdAndClass), vnode1).elm;
       assert.strictEqual(elm, elmWithIdAndClass);
       assert.equal(elm.tagName, 'DIV');
       assert.equal(elm.id, 'id');
@@ -588,7 +588,7 @@ describe('snabbdom', function() {
           }));
           var shufArr = shuffle(arr.slice(0));
           var elm = document.createElement('div');
-          elm = patch(elm, vnode1).elm;
+          elm = patch(toVNode(elm), vnode1).elm;
           for (i = 0; i < elms; ++i) {
             assert.equal(elm.children[i].innerHTML, i.toString());
             opacities[i] = Math.random().toFixed(5).toString();
@@ -957,8 +957,8 @@ describe('snabbdom', function() {
       it('invokes remove hook on replaced root', function() {
         var result = [];
         var parent = document.createElement('div');
-        var vnode0 = document.createElement('div');
-        parent.appendChild(vnode0);
+        var vnode0 = toVNode(document.createElement('div'));
+        parent.appendChild(vnode0.elm);
         function cb(vnode, rm) {
           result.push(vnode);
           rm();

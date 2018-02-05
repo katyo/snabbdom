@@ -1,6 +1,7 @@
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
+var toVNode = require('../tovnode').default;
 var h = require('../h').default;
 var patch = snabbdom.init([
   require('../modules/attributes').default
@@ -10,7 +11,7 @@ describe('svg', function () {
  var elm, vnode0;
  beforeEach(function() {
    elm = document.createElement('svg');
-   vnode0 = elm;
+   vnode0 = toVNode(elm);
  });
 
  it('removes child svg elements', function(){

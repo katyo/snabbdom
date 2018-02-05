@@ -1,6 +1,7 @@
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
+var toVNode = require('../tovnode').default;
 var patch = snabbdom.init([
   require('../modules/attributes').default,
 ]);
@@ -10,7 +11,7 @@ describe('attributes', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
   });
   it('have their provided values', function() {
     var vnode1 = h('div', {attrs: {href: '/foo', minlength: 1, selected: true, disabled: false}});
@@ -51,7 +52,7 @@ describe('attributes', function() {
     elm = document.createElement('div');
     elm.id = 'myId';
     elm.className = 'myClass';
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
     var vnode1 = h('div#myId.myClass', {attrs: {}}, ['Hello']);
     elm = patch(vnode0, vnode1).elm;
     assert.strictEqual(elm.tagName, 'DIV');

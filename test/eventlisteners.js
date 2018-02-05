@@ -1,6 +1,7 @@
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
+var toVNode = require('../tovnode').default;
 var patch = snabbdom.init([
   require('../modules/eventlisteners.js').default,
 ]);
@@ -10,7 +11,7 @@ describe('event listeners', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
   });
   it('attaches click event handler to element', function() {
     var result = [];

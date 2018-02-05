@@ -13,7 +13,7 @@ describe('style', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
   });
   it('is being styled', function() {
     elm = patch(vnode0, h('div', {style: {fontSize: '12px'}})).elm;

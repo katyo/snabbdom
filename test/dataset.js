@@ -2,6 +2,7 @@ var assert = require('assert');
 var fakeRaf = require('fake-raf');
 
 var snabbdom = require('../snabbdom');
+var toVNode = require('../tovnode').default;
 fakeRaf.use();
 var patch = snabbdom.init([
   require('../modules/dataset').default,
@@ -12,7 +13,7 @@ describe('dataset', function() {
   var elm, vnode0;
   beforeEach(function() {
     elm = document.createElement('div');
-    vnode0 = elm;
+    vnode0 = toVNode(elm);
   });
   it('is set on initial element creation', function() {
     elm = patch(vnode0, h('div', {dataset: {foo: 'foo'}})).elm;

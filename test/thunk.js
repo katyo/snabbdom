@@ -1,6 +1,7 @@
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
+var toVNode = require('../tovnode').default;
 var patch = snabbdom.init([
 ]);
 var h = require('../h').default;
@@ -9,7 +10,8 @@ var thunk = require('../thunk').default;
 describe('thunk', function() {
   var elm, vnode0;
   beforeEach(function() {
-    elm = vnode0 = document.createElement('div');
+    elm = document.createElement('div');
+    vnode0 = toVNode(elm);
   });
   it('returns vnode with data and render function', function() {
     function numberInSpan(n) {
