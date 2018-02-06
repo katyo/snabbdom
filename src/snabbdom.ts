@@ -27,7 +27,7 @@ export function isPrimitive(s: any): s is (string | number | boolean) {
   const t = (typeof s)[0];
   return t == 's' || t == 'n' || t == 'b';
 }
-function isDef<Type>(s: Type | undefined): s is Type {
+export function isDef<Type>(s: Type | undefined): s is Type {
   return s !== undefined;
 }
 
