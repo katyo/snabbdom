@@ -1,4 +1,4 @@
-import { DOMAPI } from './snabbdom';
+import { DOMAPI } from '../snabbdom';
 
 function createElement(tagName: any): HTMLElement {
   return document.createElement(tagName);

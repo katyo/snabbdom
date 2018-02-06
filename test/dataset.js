@@ -5,7 +5,7 @@ var snabbdom = require('../snabbdom');
 fakeRaf.use();
 var vdom = snabbdom.init([
   require('../modules/dataset').default,
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;

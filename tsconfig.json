@@ -24,7 +24,7 @@
         "src/modules/module.ts",
         "src/modules/style.ts",
         "src/h.ts",
-        "src/htmldomapi.ts",
+        "src/client/domapi.ts",
         "src/hooks.ts",
         "src/snabbdom.bundle.ts",
         "src/snabbdom.ts",

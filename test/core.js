@@ -6,12 +6,11 @@ var vdom = snabbdom.init([
   require('../modules/class').default,
   require('../modules/props').default,
   require('../modules/eventlisteners').default,
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;
 var vnode = require('../vnode').default;
-var htmlDomApi = require('../htmldomapi').htmlDomApi;
 
 function prop(name) {
   return function(obj) {
@@ -942,7 +941,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {remove: function(_, rm) { rm1 = rm; }},
           {remove: function(_, rm) { rm2 = rm; }},
-        ]).patch;
+        ], htmlDomApi).patch;
         var vnode1 = h('div', [h('a', {hook: {remove: function(_, rm) { rm3 = rm; }}})]);
         var vnode2 = h('div', []);
         elm = patch(vnode0, vnode1).elm;
@@ -984,7 +983,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {pre: function() { result.push('pre'); }},
           {post: function() { result.push('post'); }},
-        ]).patch;
+        ], htmlDomApi).patch;
         var vnode1 = h('div');
         patch(vnode0, vnode1);
         assert.deepEqual(result, ['pre', 'post']);
@@ -1018,7 +1017,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {destroy: function() { destroyed++; }},
-        ]).patch;
+        ], htmlDomApi).patch;
         var vnode1 = h('div', [
           h('span', 'First sibling'),
           h('div', [
@@ -1038,7 +1037,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {remove: function() { removed++; }},
-        ]).patch;
+        ], htmlDomApi).patch;
         var vnode1 = h('div', [
           h('span', 'First child'),
           '',
@@ -1056,7 +1055,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {destroy: function() { destroyed++; }},
-        ]).patch;
+        ], htmlDomApi).patch;
         var vnode1 = h('div', [
           h('span', 'First sibling'),
           h('div', [

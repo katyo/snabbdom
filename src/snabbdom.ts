@@ -2,7 +2,6 @@
 import {Module} from './modules/module';
 import {Hooks} from './hooks';
 import vnode, {VNode, VNodeData, Key} from './vnode';
-import htmlDomApi from './htmldomapi';
 
 export interface DOMAPI {
   createElement: (tagName: any) => HTMLElement;
@@ -64,10 +63,8 @@ export interface VDOMAPI {
   patch(oldVNode: VNode, newVNode: VNode): VNode;
 }
 
-export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI): VDOMAPI {
+export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
   let i: number, j: number, cbs = ({} as ModuleHooks);
-
-  const api: DOMAPI = domApi !== undefined ? domApi : htmlDomApi;
 
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = [];

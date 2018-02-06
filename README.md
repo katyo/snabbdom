@@ -66,12 +66,13 @@ performance, small size and all the features listed below.
 
 ```javascript
 var snabbdom = require('snabbdom');
+var htmlDomApi = require('snabbdom/client/domapi').default;
 var vdom = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/class').default, // makes it easy to toggle classes
   require('snabbdom/modules/props').default, // for setting properties on DOM elements
   require('snabbdom/modules/style').default, // handles styling on elements with support for animations
   require('snabbdom/modules/eventlisteners').default, // attaches event listeners
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes
@@ -123,7 +124,7 @@ to patching DOM using the previous and the next virtual nodes.
 var vdom = snabbdom.init([
   require('snabbdom/modules/class').default,
   require('snabbdom/modules/style').default,
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 ```
@@ -140,13 +141,14 @@ var initVNode = read(document.querySelector('.container'));
 Especially good for patching over an pre-existing, server-side generated content.
 
 ```javascript
-var snabbdom = require('snabbdom')
+var snabbdom = require('snabbdom');
+var htmlDomApi = require('snabbdom/client/domapi').default;
 var vdom = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/class').default, // makes it easy to toggle classes
   require('snabbdom/modules/props').default, // for setting properties on DOM elements
   require('snabbdom/modules/style').default, // handles styling on elements with support for animations
   require('snabbdom/modules/eventlisteners').default, // attaches event listeners
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes

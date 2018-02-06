@@ -3,7 +3,7 @@ var assert = require('assert');
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
   require('../modules/attributes').default,
-]);
+], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;
