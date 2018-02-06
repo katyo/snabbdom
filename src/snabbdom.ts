@@ -26,7 +26,9 @@ export function isPrimitive(s: any): s is (string | number | boolean) {
   const t = (typeof s)[0];
   return t == 's' || t == 'n' || t == 'b';
 }
-function isDef(s: any): boolean { return s !== undefined; }
+function isDef<Type>(s: Type | undefined): s is Type {
+  return s !== undefined;
+}
 
 type VNodeQueue = Array<VNode>;
 
@@ -50,7 +52,7 @@ function createKeyToOldIdx(children: Array<VNode>, beginIdx: number, endIdx: num
     ch = children[i];
     if (ch != null) {
       key = ch.key;
-      if (key !== undefined) map[key] = i;
+      if (isDef(key)) map[key] = i;
     }
   }
   return map;
@@ -70,7 +72,7 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
     cbs[hooks[i]] = [];
     for (j = 0; j < modules.length; ++j) {
       const hook = modules[j][hooks[i]];
-      if (hook !== undefined) {
+      if (isDef(hook)) {
         (cbs[hooks[i]] as Array<any>).push(hook);
       }
     }
@@ -87,7 +89,7 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
 
   function createElm(vnode: VNode, insertedVnodeQueue: VNodeQueue): Node {
     let i: any, data = vnode.data;
-    if (data !== undefined) {
+    if (isDef(data)) {
       if (isDef(i = data.hook) && isDef(i = i.init)) {
         i(vnode);
         data = vnode.data;
@@ -99,7 +101,7 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
         vnode.text = '';
       }
       vnode.elm = api.createComment(vnode.text as string);
-    } else if (sel !== undefined) {
+    } else if (isDef(sel)) {
       // Parse selector
       const hashIdx = sel.indexOf('#');
       const dotIdx = sel.indexOf('.', hashIdx);
@@ -148,10 +150,10 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
 
   function invokeDestroyHook(vnode: VNode) {
     let i: any, j: number, data = vnode.data;
-    if (data !== undefined) {
+    if (isDef(data)) {
       if (isDef(i = data.hook) && isDef(i = i.destroy)) i(vnode);
       for (i = 0; i < cbs.destroy.length; ++i) cbs.destroy[i](vnode);
-      if (vnode.children !== undefined) {
+      if (isDef(vnode.children)) {
         for (j = 0; j < vnode.children.length; ++j) {
           i = vnode.children[j];
           if (i != null && typeof i !== "string") {
@@ -269,7 +271,7 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
     let oldCh = oldVnode.children;
     let ch = vnode.children;
     if (oldVnode === vnode) return;
-    if (vnode.data !== undefined) {
+    if (isDef(vnode.data)) {
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode);
       i = vnode.data.hook;
       if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode);
