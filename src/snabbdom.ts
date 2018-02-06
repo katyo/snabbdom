@@ -12,6 +12,7 @@ export interface DOMAPI {
   removeChild: (node: Node, child: Node) => void;
   appendChild: (node: Node, child: Node) => void;
   parentNode: (node: Node) => Node | null;
+  firstChild: (node: Node) => Node | null;
   nextSibling: (node: Node) => Node | null;
   tagName: (elm: Element) => string;
   setTextContent: (node: Node, text: string | null) => void;
@@ -333,15 +334,14 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
       let name: string;
       let i: number, n: number;
       const elmAttrs = node.attributes;
-      const elmChildren = node.childNodes;
       for (i = 0, n = elmAttrs.length; i < n; i++) {
         name = elmAttrs[i].nodeName;
         if (name !== 'id' && name !== 'class') {
           attrs[name] = elmAttrs[i].nodeValue;
         }
       }
-      for (i = 0, n = elmChildren.length; i < n; i++) {
-        children.push(read(elmChildren[i]));
+      for (let elmChild = api.firstChild(node); elmChild !== null; elmChild = api.nextSibling(elmChild)) {
+        children.push(read(elmChild));
       }
       return vnode(sel, {attrs}, children, undefined, node);
     } else if (api.isText(node)) {

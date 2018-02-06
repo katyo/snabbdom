@@ -32,6 +32,10 @@ function parentNode(node: Node): Node | null {
   return node.parentNode;
 }
 
+function firstChild(node: Node): Node | null {
+  return node.firstChild;
+}
+
 function nextSibling(node: Node): Node | null {
   return node.nextSibling;
 }
@@ -69,6 +73,7 @@ export const htmlDomApi: DOMAPI = {
   removeChild,
   appendChild,
   parentNode,
+  firstChild,
   nextSibling,
   tagName,
   setTextContent,
