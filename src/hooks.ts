@@ -1,25 +1,25 @@
 import {VNode} from './vnode';
 
 export type PreHook = () => void;
-export type InitHook = (vNode: VNode) => void;
-export type CreateHook = (emptyVNode: VNode, vNode: VNode) => void;
-export type InsertHook = (vNode: VNode) => void;
-export type PrePatchHook = (oldVNode: VNode, vNode: VNode) => void;
-export type UpdateHook = (oldVNode: VNode, vNode: VNode) => void;
-export type PostPatchHook = (oldVNode: VNode, vNode: VNode) => void;
-export type DestroyHook = (vNode: VNode) => void;
-export type RemoveHook = (vNode: VNode, removeCallback: () => void) => void;
+export type InitHook<VData> = (vNode: VNode<VData>) => void;
+export type CreateHook<VData> = (emptyVNode: VNode<VData>, vNode: VNode<VData>) => void;
+export type InsertHook<VData> = (vNode: VNode<VData>) => void;
+export type PrePatchHook<VData> = (oldVNode: VNode<VData>, vNode: VNode<VData>) => void;
+export type UpdateHook<VData> = (oldVNode: VNode<VData>, vNode: VNode<VData>) => void;
+export type PostPatchHook<VData> = (oldVNode: VNode<VData>, vNode: VNode<VData>) => void;
+export type DestroyHook<VData> = (vNode: VNode<VData>) => void;
+export type RemoveHook<VData> = (vNode: VNode<VData>, removeCallback: () => void) => void;
 export type PostHook = () => void;
 
-export interface Hooks {
+export interface Hooks<VData> {
   pre?: PreHook;
-  init?: InitHook;
-  create?: CreateHook;
-  insert?: InsertHook;
-  prepatch?: PrePatchHook;
-  update?: UpdateHook;
-  postpatch?: PostPatchHook;
-  destroy?: DestroyHook;
-  remove?: RemoveHook;
+  init?: InitHook<VData>;
+  create?: CreateHook<VData>;
+  insert?: InsertHook<VData>;
+  prepatch?: PrePatchHook<VData>;
+  update?: UpdateHook<VData>;
+  postpatch?: PostPatchHook<VData>;
+  destroy?: DestroyHook<VData>;
+  remove?: RemoveHook<VData>;
   post?: PostHook;
 }

@@ -1,17 +1,22 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type Attrs = Record<string, string | number | boolean>
+export type Attrs = Record<string, string | number | boolean>;
+
+export interface VAttrsData {
+  attrs?: Attrs;
+}
 
 const xlinkNS = 'http://www.w3.org/1999/xlink';
 const xmlNS = 'http://www.w3.org/XML/1998/namespace';
 const colonChar = 58;
 const xChar = 120;
 
-function updateAttrs(oldVnode: VNode, vnode: VNode): void {
-  var key: string, elm: Element = vnode.elm as Element,
-      oldAttrs = (oldVnode.data as VNodeData).attrs,
-      attrs = (vnode.data as VNodeData).attrs;
+function updateAttrs(oldVnode: VNode<VAttrsData>, vnode: VNode<VAttrsData>): void {
+  const elm: Element = vnode.elm as Element;
+  let key: string,
+    {attrs: oldAttrs} = oldVnode.data as VAttrsData,
+    {attrs} = vnode.data as VAttrsData;
 
   if (!oldAttrs && !attrs) return;
   if (oldAttrs === attrs) return;
@@ -55,5 +60,6 @@ function updateAttrs(oldVnode: VNode, vnode: VNode): void {
   }
 }
 
-export const attributesModule = {create: updateAttrs, update: updateAttrs} as Module;
+export const attributesModule: Module<VAttrsData> = {create: updateAttrs, update: updateAttrs};
+
 export default attributesModule;

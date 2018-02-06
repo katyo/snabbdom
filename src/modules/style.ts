@@ -1,28 +1,41 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type VNodeStyle = Record<string, string> & {
-  delayed?: Record<string, string>
-  remove?: Record<string, string>
+export type Styles = Record<string, string>;
+
+export type StylesData = Styles & {
+  delayed?: Styles
+  remove?: Styles
 }
 
-var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
-var nextFrame = function(fn: any) { raf(function() { raf(fn); }); };
+export interface VStyleData {
+  style?: StylesData;
+}
+
+const raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
+function nextFrame(fn: () => void) {
+  raf(() => {
+    raf(fn);
+  });
+}
 
 function setNextFrame(obj: any, prop: string, val: any): void {
-  nextFrame(function() { obj[prop] = val; });
+  nextFrame(() => {
+    obj[prop] = val;
+  });
 }
 
-function updateStyle(oldVnode: VNode, vnode: VNode): void {
-  var cur: any, name: string, elm = vnode.elm,
-      oldStyle = (oldVnode.data as VNodeData).style,
-      style = (vnode.data as VNodeData).style;
+function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>): void {
+  const elm = vnode.elm;
+  let cur: any, name: string,
+    {style: oldStyle} = oldVnode.data as VStyleData,
+    {style} = vnode.data as VStyleData;
 
   if (!oldStyle && !style) return;
   if (oldStyle === style) return;
-  oldStyle = oldStyle || {} as VNodeStyle;
-  style = style || {} as VNodeStyle;
-  var oldHasDel = 'delayed' in oldStyle;
+  oldStyle = oldStyle || {} as StylesData;
+  style = style || {} as StylesData;
+  const oldHasDel = 'delayed' in oldStyle;
 
   for (name in oldStyle) {
     if (!style[name]) {
@@ -52,41 +65,44 @@ function updateStyle(oldVnode: VNode, vnode: VNode): void {
   }
 }
 
-function applyDestroyStyle(vnode: VNode): void {
-  var style: any, name: string, elm = vnode.elm, s = (vnode.data as VNodeData).style;
+function applyDestroyStyle(vnode: VNode<VStyleData>): void {
+  const elm = vnode.elm, {style: s} = vnode.data as VStyleData;
+  let style: any, name: string;
   if (!s || !(style = s.destroy)) return;
   for (name in style) {
     (elm as any).style[name] = style[name];
   }
 }
 
-function applyRemoveStyle(vnode: VNode, rm: () => void): void {
-  var s = (vnode.data as VNodeData).style;
+function applyRemoveStyle(vnode: VNode<VStyleData>, rm: () => void): void {
+  const {style: s} = vnode.data as VStyleData;
   if (!s || !s.remove) {
     rm();
     return;
   }
-  var name: string, elm = vnode.elm, i = 0, compStyle: CSSStyleDeclaration,
-      style = s.remove, amount = 0, applied: Array<string> = [];
+  const elm = vnode.elm;
+  let name: string, i = 0, compStyle: CSSStyleDeclaration,
+    style = s.remove, amount = 0, applied: Array<string> = [];
   for (name in style) {
     applied.push(name);
     (elm as any).style[name] = style[name];
   }
   compStyle = getComputedStyle(elm as Element);
-  var props = (compStyle as any)['transition-property'].split(', ');
+  const props = (compStyle as any)['transition-property'].split(', ');
   for (; i < props.length; ++i) {
-    if(applied.indexOf(props[i]) !== -1) amount++;
+    if (applied.indexOf(props[i]) !== -1) amount++;
   }
-  (elm as Element).addEventListener('transitionend', function (ev: TransitionEvent) {
-    if (ev.target === elm) --amount;
+  (elm as Element).addEventListener('transitionend', (ev: TransitionEvent) => {
+    if (ev.target === elm)--amount;
     if (amount === 0) rm();
   });
 }
 
-export const styleModule = {
+export const styleModule: Module<VStyleData> = {
   create: updateStyle,
   update: updateStyle,
   destroy: applyDestroyStyle,
   remove: applyRemoveStyle
-} as Module;
+};
+
 export default styleModule;

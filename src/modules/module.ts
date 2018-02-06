@@ -1,10 +1,12 @@
 import {PreHook, CreateHook, UpdateHook, DestroyHook, RemoveHook, PostHook} from '../hooks';
 
-export interface Module {
+export interface ModuleHooks<VData> {
   pre: PreHook;
-  create: CreateHook;
-  update: UpdateHook;
-  destroy: DestroyHook;
-  remove: RemoveHook;
+  create: CreateHook<VData>;
+  update: UpdateHook<VData>;
+  destroy: DestroyHook<VData>;
+  remove: RemoveHook<VData>;
   post: PostHook;
 }
+
+export type Module<VData> = Partial<ModuleHooks<VData>>;

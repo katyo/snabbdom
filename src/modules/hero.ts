@@ -1,52 +1,69 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type Hero = { id: string }
+export type Hero = {id: string};
 
-var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
-var nextFrame = function(fn: any) { raf(function() { raf(fn); }); };
+export interface VHeroData {
+  hero?: Hero;
+}
+
+const raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
+function nextFrame(fn: () => void) {
+  raf(() => {
+    raf(fn);
+  });
+}
 
 function setNextFrame(obj: any, prop: string, val: any): void {
-  nextFrame(function() { obj[prop] = val; });
+  nextFrame(() => {
+    obj[prop] = val;
+  });
 }
 
 function getTextNodeRect(textNode: Text): ClientRect | undefined {
-  var rect: ClientRect | undefined;
+  let rect: ClientRect | undefined;
   if (document.createRange) {
-    var range = document.createRange();
+    const range = document.createRange();
     range.selectNodeContents(textNode);
     if (range.getBoundingClientRect) {
-        rect = range.getBoundingClientRect();
+      rect = range.getBoundingClientRect();
     }
   }
   return rect;
 }
 
-function calcTransformOrigin(isTextNode: boolean,
-                             textRect: ClientRect | undefined,
-                             boundingRect: ClientRect): string {
+function calcTransformOrigin(
+  isTextNode: boolean,
+  textRect: ClientRect | undefined,
+  boundingRect: ClientRect
+): string {
   if (isTextNode) {
     if (textRect) {
       //calculate pixels to center of text from left edge of bounding box
-      var relativeCenterX = textRect.left + textRect.width/2 - boundingRect.left;
-      var relativeCenterY = textRect.top + textRect.height/2 - boundingRect.top;
+      const relativeCenterX = textRect.left + textRect.width / 2 - boundingRect.left;
+      const relativeCenterY = textRect.top + textRect.height / 2 - boundingRect.top;
       return relativeCenterX + 'px ' + relativeCenterY + 'px';
     }
   }
   return '0 0'; //top left
 }
 
-function getTextDx(oldTextRect: ClientRect | undefined,
-                   newTextRect: ClientRect | undefined): number {
+function getTextDx(
+  oldTextRect: ClientRect | undefined,
+  newTextRect: ClientRect | undefined
+): number {
   if (oldTextRect && newTextRect) {
-    return ((oldTextRect.left + oldTextRect.width/2) - (newTextRect.left + newTextRect.width/2));
+    return ((oldTextRect.left + oldTextRect.width / 2) - (newTextRect.left + newTextRect.width / 2));
   }
   return 0;
 }
-function getTextDy(oldTextRect: ClientRect | undefined,
-                   newTextRect: ClientRect | undefined): number {
+
+function getTextDy(
+  oldTextRect: ClientRect | undefined,
+  newTextRect: ClientRect | undefined
+): number {
   if (oldTextRect && newTextRect) {
-    return ((oldTextRect.top + oldTextRect.height/2) - (newTextRect.top + newTextRect.height/2));
+    return ((oldTextRect.top + oldTextRect.height / 2) - (newTextRect.top + newTextRect.height / 2));
   }
   return 0;
 }
@@ -55,45 +72,46 @@ function isTextElement(elm: Element | Text): elm is Text {
   return elm.childNodes.length === 1 && elm.childNodes[0].nodeType === 3;
 }
 
-var removed: any, created: any;
+let removed: any, created: any;
 
 function pre() {
   removed = {};
   created = [];
 }
 
-function create(oldVnode: VNode, vnode: VNode): void {
-  var hero = (vnode.data as VNodeData).hero;
+function create(oldVnode: VNode<VHeroData>, vnode: VNode<VHeroData>): void {
+  const hero = (vnode.data as VHeroData).hero;
   if (hero && hero.id) {
     created.push(hero.id);
     created.push(vnode);
   }
 }
 
-function destroy(vnode: VNode): void {
-  var hero = (vnode.data as VNodeData).hero;
+function destroy(vnode: VNode<VHeroData>): void {
+  const hero = (vnode.data as VHeroData).hero;
   if (hero && hero.id) {
-    var elm = vnode.elm;
+    const elm = vnode.elm;
     (vnode as any).isTextNode = isTextElement(elm as Element | Text); //is this a text node?
     (vnode as any).boundingRect = (elm as Element).getBoundingClientRect(); //save the bounding rectangle to a new property on the vnode
     (vnode as any).textRect = (vnode as any).isTextNode ? getTextNodeRect((elm as Element).childNodes[0] as Text) : null; //save bounding rect of inner text node
-    var computedStyle = window.getComputedStyle(elm as Element, void 0); //get current styles (includes inherited properties)
+    const computedStyle = window.getComputedStyle(elm as Element, void 0); //get current styles (includes inherited properties)
     (vnode as any).savedStyle = JSON.parse(JSON.stringify(computedStyle)); //save a copy of computed style values
     removed[hero.id] = vnode;
   }
 }
 
 function post() {
-  var i: number, id: any, newElm: Element, oldVnode: VNode, oldElm: Element,
-      hRatio: number, wRatio: number,
-      oldRect: ClientRect, newRect: ClientRect, dx: number, dy: number,
-      origTransform: string | null, origTransition: string | null,
-      newStyle: CSSStyleDeclaration, oldStyle: CSSStyleDeclaration,
-      newComputedStyle: CSSStyleDeclaration, isTextNode: boolean,
-      newTextRect: ClientRect | undefined, oldTextRect: ClientRect | undefined;
+  let i: number, id: any, newElm: Element, oldVnode: VNode<VHeroData>, oldElm: Element,
+    hRatio: number, wRatio: number,
+    oldRect: ClientRect, newRect: ClientRect, dx: number, dy: number,
+    origTransform: string | null, origTransition: string | null,
+    newStyle: CSSStyleDeclaration, oldStyle: CSSStyleDeclaration,
+    newComputedStyle: CSSStyleDeclaration, isTextNode: boolean,
+    newTextRect: ClientRect | undefined, oldTextRect: ClientRect | undefined;
+
   for (i = 0; i < created.length; i += 2) {
     id = created[i];
-    newElm = created[i+1].elm;
+    newElm = created[i + 1].elm;
     oldVnode = removed[id];
     if (oldVnode) {
       isTextNode = (oldVnode as any).isTextNode && isTextElement(newElm); //Are old & new both text?
@@ -125,17 +143,17 @@ function post() {
       newStyle.transition = origTransition + 'transform 0s';
       newStyle.transformOrigin = calcTransformOrigin(isTextNode, newTextRect, newRect);
       newStyle.opacity = '0';
-      newStyle.transform = origTransform + 'translate('+dx+'px, '+dy+'px) ' +
-                               'scale('+1/wRatio+', '+1/hRatio+')';
+      newStyle.transform = origTransform + 'translate(' + dx + 'px, ' + dy + 'px) ' +
+        'scale(' + 1 / wRatio + ', ' + 1 / hRatio + ')';
       setNextFrame(newStyle, 'transition', origTransition);
       setNextFrame(newStyle, 'transform', origTransform);
       setNextFrame(newStyle, 'opacity', '1');
       // Animate old element
-      for (var key in (oldVnode as any).savedStyle) { //re-apply saved inherited properties
+      for (let key in (oldVnode as any).savedStyle) { //re-apply saved inherited properties
         if (parseInt(key) != key as any as number) {
-          var ms = key.substring(0,2) === 'ms';
-          var moz = key.substring(0,3) === 'moz';
-          var webkit = key.substring(0,6) === 'webkit';
+          const ms = key.substring(0, 2) === 'ms';
+          const moz = key.substring(0, 3) === 'moz';
+          const webkit = key.substring(0, 6) === 'webkit';
           if (!ms && !moz && !webkit) //ignore prefixed style properties
             (oldStyle as any)[key] = (oldVnode as any).savedStyle[key];
         }
@@ -150,7 +168,7 @@ function post() {
       oldStyle.transform = '';
       oldStyle.opacity = '1';
       document.body.appendChild(oldElm);
-      setNextFrame(oldStyle, 'transform', 'translate('+ -dx +'px, '+ -dy +'px) scale('+wRatio+', '+hRatio+')'); //scale must be on far right for translate to be correct
+      setNextFrame(oldStyle, 'transform', 'translate(' + -dx + 'px, ' + -dy + 'px) scale(' + wRatio + ', ' + hRatio + ')'); //scale must be on far right for translate to be correct
       setNextFrame(oldStyle, 'opacity', '0');
       oldElm.addEventListener('transitionend', function (ev: TransitionEvent) {
         if (ev.propertyName === 'transform')
@@ -161,5 +179,6 @@ function post() {
   removed = created = undefined;
 }
 
-export const heroModule = {pre, create, destroy, post} as Module;
+export const heroModule: Module<VHeroData> = {pre, create, destroy, post};
+
 export default heroModule;

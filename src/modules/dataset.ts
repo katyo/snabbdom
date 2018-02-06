@@ -1,14 +1,18 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode} from '../vnode';
 import {Module} from './module';
 
 export type Dataset = Record<string, string>;
 
+export interface VDatasetData {
+  dataset?: Dataset;
+}
+
 const CAPS_REGEX = /[A-Z]/g;
 
-function updateDataset(oldVnode: VNode, vnode: VNode): void {
+function updateDataset(oldVnode: VNode<VDatasetData>, vnode: VNode<VDatasetData>): void {
   let elm: HTMLElement = vnode.elm as HTMLElement,
-    oldDataset = (oldVnode.data as VNodeData).dataset,
-    dataset = (vnode.data as VNodeData).dataset,
+    oldDataset = (oldVnode.data as VDatasetData).dataset,
+    dataset = (vnode.data as VDatasetData).dataset,
     key: string;
 
   if (!oldDataset && !dataset) return;
@@ -39,5 +43,6 @@ function updateDataset(oldVnode: VNode, vnode: VNode): void {
   }
 }
 
-export const datasetModule = {create: updateDataset, update: updateDataset} as Module;
+export const datasetModule: Module<VDatasetData> = {create: updateDataset, update: updateDataset};
+
 export default datasetModule;

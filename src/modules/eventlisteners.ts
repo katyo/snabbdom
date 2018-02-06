@@ -1,13 +1,15 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type On = {
-  [N in keyof HTMLElementEventMap]?: (ev: HTMLElementEventMap[N]) => void
-} & {
-  [event: string]: EventListener
-};
+export type On =
+  {[N in keyof HTMLElementEventMap]?: (ev: HTMLElementEventMap[N]) => void}
+  & {[event: string]: EventListener};
 
-function invokeHandler(handler: any, vnode?: VNode, event?: Event): void {
+export interface VEventData {
+  on?: On;
+}
+
+function invokeHandler(handler: any, vnode?: VNode<VEventData>, event?: Event): void {
   if (typeof handler === "function") {
     // call function handler
     handler.call(vnode, event, vnode);
@@ -18,23 +20,23 @@ function invokeHandler(handler: any, vnode?: VNode, event?: Event): void {
       if (handler.length === 2) {
         handler[0].call(vnode, handler[1], event, vnode);
       } else {
-        var args = handler.slice(1);
+        const args = handler.slice(1);
         args.push(event);
         args.push(vnode);
         handler[0].apply(vnode, args);
       }
     } else {
       // call multiple handlers
-      for (var i = 0; i < handler.length; i++) {
+      for (let i = 0; i < handler.length; i++) {
         invokeHandler(handler[i]);
       }
     }
   }
 }
 
-function handleEvent(event: Event, vnode: VNode) {
-  var name = event.type,
-      on = (vnode.data as VNodeData).on;
+function handleEvent(event: Event, vnode: VNode<VEventData>) {
+  const name = event.type,
+    {on} = vnode.data as VEventData;
 
   // call event handler(s) if exists
   if (on && on[name]) {
@@ -48,13 +50,13 @@ function createListener() {
   }
 }
 
-function updateEventListeners(oldVnode: VNode, vnode?: VNode): void {
-  var oldOn = (oldVnode.data as VNodeData).on,
-      oldListener = (oldVnode as any).listener,
-      oldElm: Element = oldVnode.elm as Element,
-      on = vnode && (vnode.data as VNodeData).on,
-      elm: Element = (vnode && vnode.elm) as Element,
-      name: string;
+function updateEventListeners(oldVnode: VNode<VEventData>, vnode?: VNode<VEventData>): void {
+  const {on: oldOn} = oldVnode.data as VEventData,
+    oldListener = (oldVnode as any).listener,
+    oldElm: Element = oldVnode.elm as Element,
+    on = vnode && (vnode.data as VEventData).on,
+    elm: Element = (vnode && vnode.elm) as Element;
+  let name: string;
 
   // optimization for reused immutable handlers
   if (oldOn === on) {
@@ -82,7 +84,7 @@ function updateEventListeners(oldVnode: VNode, vnode?: VNode): void {
   // add new listeners which has not already attached
   if (on) {
     // reuse existing listener or create new
-    var listener = (vnode as any).listener = (oldVnode as any).listener || createListener();
+    const listener = (vnode as any).listener = (oldVnode as any).listener || createListener();
     // update vnode for listener
     listener.vnode = vnode;
 
@@ -103,9 +105,10 @@ function updateEventListeners(oldVnode: VNode, vnode?: VNode): void {
   }
 }
 
-export const eventListenersModule = {
+export const eventListenersModule: Module<VEventData> = {
   create: updateEventListeners,
   update: updateEventListeners,
   destroy: updateEventListeners
-} as Module;
+};
+
 export default eventListenersModule;

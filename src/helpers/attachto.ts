@@ -1,4 +1,4 @@
-import {VNode, VNodeData} from '../vnode';
+import {VNode, VBaseData, VHooksData} from '../vnode';
 
 export interface AttachData {
   [key: string]: any
@@ -7,39 +7,34 @@ export interface AttachData {
   real?: Node
 }
 
-interface VNodeDataWithAttach extends VNodeData {
+export interface VAttachData {
   attachData: AttachData
 }
 
-interface VNodeWithAttachData extends VNode {
-  data: VNodeDataWithAttach
-}
-
-function pre(vnode: VNodeWithAttachData, newVnode: VNodeWithAttachData): void {
-  const attachData = vnode.data.attachData;
+function pre(vnode: VNode<VAttachData>, newVnode: VNode<VAttachData>): void {
+  const {attachData} = vnode.data as VAttachData;
   // Copy created placeholder and real element from old vnode
-  newVnode.data.attachData.placeholder = attachData.placeholder;
-  newVnode.data.attachData.real = attachData.real;
+  (newVnode.data as VAttachData).attachData.placeholder = attachData.placeholder;
   // Mount real element in vnode so the patch process operates on it
-  vnode.elm = vnode.data.attachData.real;
+  vnode.elm = (newVnode.data as VAttachData).attachData.real = attachData.real;
 }
 
-function post(_: any, vnode: VNodeWithAttachData): void {
+function post(_: any, vnode: VNode<VAttachData>): void {
   // Mount dummy placeholder in vnode so potential reorders use it
-  vnode.elm = vnode.data.attachData.placeholder;
+  vnode.elm = (vnode.data as VAttachData).attachData.placeholder;
 }
 
-function destroy(vnode: VNodeWithAttachData): void {
+function destroy(vnode: VNode<VAttachData>): void {
   // Remove placeholder
   if (vnode.elm !== undefined) {
     (vnode.elm.parentNode as HTMLElement).removeChild(vnode.elm);
   }
   // Remove real element from where it was inserted
-  vnode.elm = vnode.data.attachData.real;
+  vnode.elm = (vnode.data as VAttachData).attachData.real;
 }
 
-function create(_: any, vnode: VNodeWithAttachData): void {
-  const real = vnode.elm, attachData = vnode.data.attachData;
+function create(_: any, vnode: VNode<VAttachData>): void {
+  const real = vnode.elm, {attachData} = vnode.data as VAttachData;
   const placeholder = document.createElement('span');
   // Replace actual element with dummy placeholder
   // Snabbdom will then insert placeholder instead
@@ -49,8 +44,8 @@ function create(_: any, vnode: VNodeWithAttachData): void {
   attachData.placeholder = placeholder;
 }
 
-export function attachTo(target: Element, vnode: VNode): VNode {
-  if (vnode.data === undefined) vnode.data = {};
+export function attachTo(target: Element, vnode: VNode<VAttachData & VBaseData & VHooksData<VAttachData>>): VNode<VAttachData & VBaseData & VHooksData<VAttachData>> {
+  if (vnode.data === undefined) vnode.data = {} as VAttachData;
   if (vnode.data.hook === undefined) vnode.data.hook = {};
   const data = vnode.data;
   const hook = vnode.data.hook;
@@ -61,4 +56,5 @@ export function attachTo(target: Element, vnode: VNode): VNode {
   hook.destroy = destroy;
   return vnode;
 };
+
 export default attachTo;
