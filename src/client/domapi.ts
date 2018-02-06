@@ -60,7 +60,7 @@ function isComment(node: Node): node is Comment {
   return node.nodeType === 8;
 }
 
-export const htmlDomApi = {
+export const htmlDomApi: DOMAPI = {
   createElement,
   createElementNS,
   createTextNode,
@@ -76,6 +76,6 @@ export const htmlDomApi = {
   isElement,
   isText,
   isComment,
-} as DOMAPI;
+};
 
 export default htmlDomApi;

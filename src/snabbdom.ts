@@ -11,8 +11,8 @@ export interface DOMAPI {
   insertBefore: (parentNode: Node, newNode: Node, referenceNode: Node | null) => void;
   removeChild: (node: Node, child: Node) => void;
   appendChild: (node: Node, child: Node) => void;
-  parentNode: (node: Node) => Node;
-  nextSibling: (node: Node) => Node;
+  parentNode: (node: Node) => Node | null;
+  nextSibling: (node: Node) => Node | null;
   tagName: (elm: Element) => string;
   setTextContent: (node: Node, text: string | null) => void;
   getTextContent: (node: Node) => string | null;
@@ -66,7 +66,7 @@ export interface VDOMAPI {
 }
 
 export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
-  let i: number, j: number, cbs = ({} as ModuleHooks);
+  let i: number, j: number, cbs = {} as ModuleHooks;
 
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = [];
@@ -81,7 +81,7 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
   function createRmCb(childElm: Node, listeners: number) {
     return function rmCb() {
       if (--listeners === 0) {
-        const parent = api.parentNode(childElm);
+        const parent = api.parentNode(childElm) as Node;
         api.removeChild(parent, childElm);
       }
     };
@@ -296,15 +296,15 @@ export function init(modules: Array<Partial<Module>>, api: DOMAPI): VDOMAPI {
   }
 
   function patch(oldVnode: VNode, vnode: VNode): VNode {
-    let i: number, elm: Node, parent: Node;
+    let i: number;
     const insertedVnodeQueue: VNodeQueue = [];
     for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i]();
 
     if (sameVnode(oldVnode, vnode)) {
       patchVnode(oldVnode, vnode, insertedVnodeQueue);
     } else {
-      elm = oldVnode.elm as Node;
-      parent = api.parentNode(elm);
+      const elm = oldVnode.elm as Node;
+      const parent = api.parentNode(elm);
 
       createElm(vnode, insertedVnodeQueue);
 
