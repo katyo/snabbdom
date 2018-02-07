@@ -1,6 +1,6 @@
-import { DOMAPI } from '../snabbdom';
+import {DOMAPI} from '../snabbdom';
 
-function createElement(tagName: any): HTMLElement {
+function createElement(tagName: string): HTMLElement {
   return document.createElement(tagName);
 }
 

@@ -4,7 +4,7 @@ import {Hooks} from './hooks';
 import {vnode, VNode, VBaseData, Key, VHooksData} from './vnode';
 
 export interface DOMAPI {
-  createElement: (tagName: any) => HTMLElement;
+  createElement: (tagName: string) => HTMLElement;
   createElementNS: (namespaceURI: string, qualifiedName: string) => Element;
   createTextNode: (text: string) => Text;
   createComment: (text: string) => Comment;
@@ -136,11 +136,11 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   }
 
   function addVnodes(parentElm: Node,
-                     before: Node | null,
-                     vnodes: VNode<VData>[],
-                     startIdx: number,
-                     endIdx: number,
-                     insertedVnodeQueue: VNodeQueue<VData>) {
+    before: Node | null,
+    vnodes: VNode<VData>[],
+    startIdx: number,
+    endIdx: number,
+    insertedVnodeQueue: VNodeQueue<VData>) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx];
       if (ch != null) {
@@ -166,9 +166,9 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   }
 
   function removeVnodes(parentElm: Node,
-                        vnodes: VNode<VData>[],
-                        startIdx: number,
-                        endIdx: number): void {
+    vnodes: VNode<VData>[],
+    startIdx: number,
+    endIdx: number): void {
     for (; startIdx <= endIdx; ++startIdx) {
       let i: any, listeners: number, rm: () => void, ch = vnodes[startIdx];
       if (ch != null) {
@@ -190,9 +190,9 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   }
 
   function updateChildren(parentElm: Node,
-                          oldCh: VNode<VData>[],
-                          newCh: VNode<VData>[],
-                          insertedVnodeQueue: VNodeQueue<VData>) {
+    oldCh: VNode<VData>[],
+    newCh: VNode<VData>[],
+    insertedVnodeQueue: VNodeQueue<VData>) {
     let oldStartIdx = 0, newStartIdx = 0;
     let oldEndIdx = oldCh.length - 1;
     let oldStartVnode = oldCh[0];
@@ -255,7 +255,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     }
     if (oldStartIdx <= oldEndIdx || newStartIdx <= newEndIdx) {
       if (oldStartIdx > oldEndIdx) {
-        before = newCh[newEndIdx+1] == null ? null : newCh[newEndIdx+1].elm;
+        before = newCh[newEndIdx + 1] == null ? null : newCh[newEndIdx + 1].elm;
         addVnodes(parentElm, before, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
       } else {
         removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);

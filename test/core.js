@@ -1097,4 +1097,36 @@ describe('snabbdom', function() {
       assert.equal(result.length, 0);
     });
   });
+  describe('html rendering', function() {
+    var render = require('../server/domapi').render;
+    var domApi = require('../server/domapi').default;
+    var vdom = snabbdom.init([], domApi);
+    
+    it('can render single node', function() {
+      var elm = domApi.createElement('p');
+      vdom.patch(vdom.read(elm), h('p', 'Hello world'));
+      assert.equal(render(elm), '<p>Hello world</p>');
+    });
+
+    it('can render multiple nodes', function() {
+      var elm = domApi.createElement('div');
+      var vnode = h('div', [
+        h('h2', 'Heading'),
+        '\n',
+        h('p', [
+          'Hello ',
+          h('span', 'there')
+        ]),
+        ' ',
+      ]);
+      vdom.patch(vdom.read(elm), vnode);
+      assert.equal(render(elm), '<div><h2>Heading</h2>\n<p>Hello <span>there</span></p> </div>');
+    });
+    
+    it('can escape text content', function() {
+      var elm = domApi.createElement('p');
+      vdom.patch(vdom.read(elm), h('p', '<\'Hello\'&"world">'));
+      assert.equal(render(elm), '<p>&lt;&#039;Hello&#039;&amp;&quot;world&quot;&gt;</p>');
+    });
+  });
 });

@@ -856,7 +856,7 @@ import {VStyleData} from 'snabbdom/modules/class';
 import {VEventData} from 'snabbdom/modules/eventlisteners';
 
 // Importing html APIs
-import htmlDomApi from 'snabbdom/server/domapi';
+import htmlDomApi, {render} from 'snabbdom/server/domapi';
 import attributesApi from 'snabbdom/server/attributes';
 import classApi from 'snabbdom/server/class';
 
@@ -880,7 +880,7 @@ patch(vnode, newVNode);
 vnode = newVNode;
 
 // output
-documentElement.toString();
+const html = '<!DOCTYPE html>' + render(documentElement);
 ```
 
 ## Structuring applications

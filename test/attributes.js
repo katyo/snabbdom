@@ -96,4 +96,40 @@ describe('attributes', function() {
       assert.strictEqual(elm.hasAttribute('constructor'), false);
     });
   });
+  describe('html rendering', function() {
+    var render = require('../server/domapi').render;
+    var domApi = require('../server/domapi').default;
+    var vdom = snabbdom.init([
+      require('../modules/attributes').default(require('../server/attributes').default)
+    ], domApi);
+    
+    it('can render single attribute', function() {
+      var elm = domApi.createElement('div');
+      vdom.patch(vdom.read(elm), h('div', [
+        h('a', {attrs:{href:'http://example.com/#snippets'}}, 'Snippets')
+      ]));
+      assert.equal(render(elm), '<div><a href="http://example.com/#snippets">Snippets</a></div>');
+    });
+
+    it('can render multiple attributes', function() {
+      var elm = domApi.createElement('div');
+      vdom.patch(vdom.read(elm), h('div', {attrs:{role:'navigation'}}, [
+        h('a', {attrs:{id:'menu-item-snippets', href:'http://example.com/#snippets'}}, 'Snippets'),
+        h('a', {attrs:{id:'menu-item-about', href:'http://example.com/about'}}, 'About us')
+      ]));
+      assert.equal(render(elm),
+                   '<div role="navigation">' +
+                   '<a id="menu-item-snippets" href="http://example.com/#snippets">Snippets</a>' +
+                   '<a id="menu-item-about" href="http://example.com/about">About us</a>' +
+                   '</div>');
+    });
+
+    it('can escape attribute values', function() {
+      var elm = domApi.createElement('div');
+      vdom.patch(vdom.read(elm), h('div', [
+        h('a', {attrs:{href:'http://example.com/#"snippets"'}}, 'Snippets')
+      ]));
+      assert.equal(render(elm), '<div><a href="http://example.com/#\\"snippets\\"">Snippets</a></div>');
+    });
+  });
 });
