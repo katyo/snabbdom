@@ -67,11 +67,17 @@ performance, small size and all the features listed below.
 ```javascript
 var snabbdom = require('snabbdom');
 var htmlDomApi = require('snabbdom/client/domapi').default;
+var attrsApi = require('snabbdom/client/attributes').default;
+var classApi = require('snabbdom/client/class').default;
+var propsApi = require('snabbdom/client/props').default;
+var styleApi = require('snabbdom/client/style').default;
+var eventApi = require('snabbdom/client/eventlisteners').default;
 var vdom = snabbdom.init([ // Init patch function with chosen modules
-  require('snabbdom/modules/class').default, // makes it easy to toggle classes
-  require('snabbdom/modules/props').default, // for setting properties on DOM elements
-  require('snabbdom/modules/style').default, // handles styling on elements with support for animations
-  require('snabbdom/modules/eventlisteners').default, // attaches event listeners
+  require('snabbdom/modules/attributes').default(attrsApi), // handles attributes
+  require('snabbdom/modules/class').default(classApi), // makes it easy to toggle classes
+  require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
+  require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
+  require('snabbdom/modules/eventlisteners').default(eventApi), // attaches event listeners
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
@@ -122,12 +128,14 @@ to patching DOM using the previous and the next virtual nodes.
 
 ```javascript
 var vdom = snabbdom.init([
-  require('snabbdom/modules/class').default,
-  require('snabbdom/modules/style').default,
+  require('snabbdom/modules/class').default(classApi),
+  require('snabbdom/modules/style').default(styleApi),
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
 ```
+
+The `domApi` parameter is required and can be used either _client/domapi_ for patching DOM tree in browsers or _server/domapi_ to get HTML output on server.
 
 ### `read`
 
@@ -142,12 +150,11 @@ Especially good for patching over an pre-existing, server-side generated content
 
 ```javascript
 var snabbdom = require('snabbdom');
-var htmlDomApi = require('snabbdom/client/domapi').default;
 var vdom = snabbdom.init([ // Init patch function with chosen modules
-  require('snabbdom/modules/class').default, // makes it easy to toggle classes
-  require('snabbdom/modules/props').default, // for setting properties on DOM elements
-  require('snabbdom/modules/style').default, // handles styling on elements with support for animations
-  require('snabbdom/modules/eventlisteners').default, // attaches event listeners
+  require('snabbdom/modules/class').default(classApi), // makes it easy to toggle classes
+  require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
+  require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
+  require('snabbdom/modules/eventlisteners').default(eventListenersApi), // attaches event listeners
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
@@ -297,14 +304,16 @@ animate the disappearance of the removed element's children.
 Modules works by registering global listeners for [hooks](#hooks). A module is simply a dictionary mapping hook names to functions.
 
 ```javascript
-var myModule = {
-  create: function(oldVnode, vnode) {
-    // invoked whenever a new virtual node is created
-  },
-  update: function(oldVnode, vnode) {
-    // invoked whenever a virtual node is updated
-  }
-};
+function myModule(api) {
+  return {
+    create: function(oldVnode, vnode) {
+      // invoked whenever a new virtual node is created
+    },
+    update: function(oldVnode, vnode) {
+      // invoked whenever a virtual node is updated
+    }
+  };
+}
 ```
 
 With this mechanism you can easily augment the behaviour of Snabbdom.
@@ -636,7 +645,7 @@ For example `h('div', {props: {className: 'container'}}, [...])` will produce a 
 ```
 as its `.data` object.
 
-#### children : Array<vnode>
+#### children : VNode[]
 
 The `.children` property of a virtual node is the third (optional)
 parameter to [`h()`](#snabbdomh) during creation. `.children` is

@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
-  require('../modules/eventlisteners.js').default,
+  require('../modules/eventlisteners').default(require('../client/eventlisteners').default),
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;

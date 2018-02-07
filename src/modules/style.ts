@@ -12,97 +12,80 @@ export interface VStyleData {
   style?: StylesData;
 }
 
-const raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
-function nextFrame(fn: () => void) {
-  raf(() => {
-    raf(fn);
-  });
+export interface StyleAPI {
+  setStyle(elm: Node, name: string, val: string, next?: boolean): void;
+  removeStyle(elm: Node, name: string): void;
+  onTransEnd(elm: Node, names: string[], callback: () => void): void;
 }
 
-function setNextFrame(obj: any, prop: string, val: any): void {
-  nextFrame(() => {
-    obj[prop] = val;
-  });
-}
+export function styleModule(api: StyleAPI): Module<VStyleData> {
+  function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>): void {
+    const elm = vnode.elm as Node;
+    let cur: any, name: string,
+      {style: oldStyle} = oldVnode.data as VStyleData,
+      {style} = vnode.data as VStyleData;
 
-function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>): void {
-  const elm = vnode.elm;
-  let cur: any, name: string,
-    {style: oldStyle} = oldVnode.data as VStyleData,
-    {style} = vnode.data as VStyleData;
+    if (!oldStyle && !style) return;
+    if (oldStyle === style) return;
+    oldStyle = oldStyle || {};
+    style = style || {};
 
-  if (!oldStyle && !style) return;
-  if (oldStyle === style) return;
-  oldStyle = oldStyle || {} as StylesData;
-  style = style || {} as StylesData;
-  const oldHasDel = 'delayed' in oldStyle;
+    const oldHasDel = 'delayed' in oldStyle;
 
-  for (name in oldStyle) {
-    if (!style[name]) {
-      if (name[0] === '-' && name[1] === '-') {
-        (elm as any).style.removeProperty(name);
-      } else {
-        (elm as any).style[name] = '';
+    for (name in oldStyle) {
+      if (!style[name]) {
+        api.removeStyle(elm, name);
       }
     }
-  }
-  for (name in style) {
-    cur = style[name];
-    if (name === 'delayed' && style.delayed) {
-      for (let name2 in style.delayed) {
-        cur = style.delayed[name2];
-        if (!oldHasDel || cur !== (oldStyle.delayed as any)[name2]) {
-          setNextFrame((elm as any).style, name2, cur);
+
+    for (name in style) {
+      cur = style[name];
+      if (name === 'delayed' && style.delayed) {
+        for (let name2 in style.delayed) {
+          cur = style.delayed[name2];
+          if (!oldHasDel || cur !== (oldStyle.delayed as any)[name2]) {
+            api.setStyle(elm, name2, cur, true);
+          }
         }
-      }
-    } else if (name !== 'remove' && cur !== oldStyle[name]) {
-      if (name[0] === '-' && name[1] === '-') {
-        (elm as any).style.setProperty(name, cur);
-      } else {
-        (elm as any).style[name] = cur;
+      } else if (name !== 'remove' && cur !== oldStyle[name]) {
+        api.setStyle(elm, name, cur);
       }
     }
   }
-}
 
-function applyDestroyStyle(vnode: VNode<VStyleData>): void {
-  const elm = vnode.elm, {style: s} = vnode.data as VStyleData;
-  let style: any, name: string;
-  if (!s || !(style = s.destroy)) return;
-  for (name in style) {
-    (elm as any).style[name] = style[name];
+  function applyDestroyStyle(vnode: VNode<VStyleData>): void {
+    const elm = vnode.elm as Node,
+      {style: s} = vnode.data as VStyleData;
+    let style: any, name: string;
+    if (!s || !(style = s.destroy)) return;
+    for (name in style) {
+      api.setStyle(elm, name, style[name]);
+    }
   }
-}
 
-function applyRemoveStyle(vnode: VNode<VStyleData>, rm: () => void): void {
-  const {style: s} = vnode.data as VStyleData;
-  if (!s || !s.remove) {
-    rm();
-    return;
+  function applyRemoveStyle(vnode: VNode<VStyleData>, rm: () => void): void {
+    const {style: s} = vnode.data as VStyleData;
+    if (!s || !s.remove) {
+      rm();
+      return;
+    }
+    const elm = vnode.elm as Node,
+      style = s.remove,
+      applied: string[] = [];
+    let name: string;
+    for (name in style) {
+      applied.push(name);
+      api.setStyle(elm, name, style[name]);
+    }
+    api.onTransEnd(elm, applied, rm);
   }
-  const elm = vnode.elm;
-  let name: string, i = 0, compStyle: CSSStyleDeclaration,
-    style = s.remove, amount = 0, applied: Array<string> = [];
-  for (name in style) {
-    applied.push(name);
-    (elm as any).style[name] = style[name];
-  }
-  compStyle = getComputedStyle(elm as Element);
-  const props = (compStyle as any)['transition-property'].split(', ');
-  for (; i < props.length; ++i) {
-    if (applied.indexOf(props[i]) !== -1) amount++;
-  }
-  (elm as Element).addEventListener('transitionend', (ev: TransitionEvent) => {
-    if (ev.target === elm)--amount;
-    if (amount === 0) rm();
-  });
-}
 
-export const styleModule: Module<VStyleData> = {
-  create: updateStyle,
-  update: updateStyle,
-  destroy: applyDestroyStyle,
-  remove: applyRemoveStyle
-};
+  return {
+    create: updateStyle,
+    update: updateStyle,
+    destroy: applyDestroyStyle,
+    remove: applyRemoveStyle
+  };
+}
 
 export default styleModule;

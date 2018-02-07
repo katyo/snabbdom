@@ -3,9 +3,9 @@ var shuffle = require('knuth-shuffle').knuthShuffle;
 
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
-  require('../modules/class').default,
-  require('../modules/props').default,
-  require('../modules/eventlisteners').default,
+  require('../modules/class').default(require('../client/class').default),
+  require('../modules/props').default(require('../client/props').default),
+  require('../modules/eventlisteners').default(require('../client/eventlisteners').default),
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;

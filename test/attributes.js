@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
-  require('../modules/attributes').default,
+  require('../modules/attributes').default(require('../client/attributes').default),
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;

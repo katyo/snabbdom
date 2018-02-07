@@ -4,7 +4,7 @@ var fakeRaf = require('fake-raf');
 var snabbdom = require('../snabbdom');
 fakeRaf.use();
 var vdom = snabbdom.init([
-  require('../modules/style').default,
+  require('../modules/style').default(require('../client/style').default),
 ], htmlDomApi);
 var read = vdom.read;
 var patch = vdom.patch;
@@ -102,7 +102,7 @@ describe('style', function() {
   });
   it('updates delayed styles in next frame', function() {
     var patch = snabbdom.init([
-      require('../modules/style').default,
+      require('../modules/style').default(require('../client/style').default),
     ], htmlDomApi).patch;
     var vnode1 = h('i', {style: {fontSize: '14px', delayed: {fontSize: '16px'}}});
     var vnode2 = h('i', {style: {fontSize: '18px', delayed: {fontSize: '20px'}}});
