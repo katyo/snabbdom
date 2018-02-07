@@ -3,9 +3,11 @@
 A virtual DOM library with focus on simplicity, modularity, powerful features
 and performance.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![npm version](https://badge.fury.io/js/snabbdom.svg)](https://badge.fury.io/js/snabbdom) [![npm downloads](https://img.shields.io/npm/dm/snabbdom.svg)](https://www.npmjs.com/package/snabbdom)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![npm version](https://badge.fury.io/js/snabbdom-ng.svg)](https://badge.fury.io/js/snabbdom-ng) [![npm downloads](https://img.shields.io/npm/dm/snabbdom-ng.svg)](https://www.npmjs.com/package/snabbdom-ng)
 
 [![Join the chat at https://gitter.im/paldepind/snabbdom](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/paldepind/snabbdom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+__IMPORTANT NOTE:__ _This is a fork of original snabbdom with partially incompatible API. See the [differences](#fork-differences) to know more._
 
 ## Table of contents
 
@@ -17,6 +19,7 @@ and performance.
 * [Modules documentation](#modules-documentation)
 * [Helpers](#helpers)
 * [Virtual Node documentation](#virtual-node)
+* [Differences from original](#fork-differences)
 * [Structuring applications](#structuring-applications)
 
 ## Why
@@ -700,6 +703,185 @@ an object, where `.key` is the key and the value is the
 For example: `h('div', {key: 1}, [])` will create a virtual node
 object with a `.key` property with the value of `1`.
 
+## Fork differences
+
+### Parametrized VNode
+
+At this moment the _TypeScript_ fork of __snabbdom__ doesn't use parametrization.
+The `VNodeData` is declared using excess property checks what assumes less strict type checking.
+
+In this fork the `VNode` declared using `VNodeData` as parameter like so:
+
+```typescript
+interface VNode<VNodeData> {
+  sel?: string;
+  data?: VNodeData;
+  children?: (VNode<VNodeData> | string)[];
+  elm?: Node;
+  text?: string;
+  key?: Key;
+}
+```
+
+This allows strict type checking for `VNodeData` which actually used by application.
+
+```typescript
+import {VBaseData, VHooksData} from 'snabbdom/vnode';
+import {init} from 'snabbdom';
+import {attributesModule, VAttrsData} from 'snabbdom/modules/attributes';
+import {classModule, VClassData} from 'snabbdom/modules/class';
+
+// Declaring own VNodeData which application actually uses
+interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData {}
+
+let vdom = init<VData>([
+  attributesModule(attributesApi),
+  classModule(classApi)
+]);
+```
+
+### The `toVNode` merged into core
+
+To avoid polymorphism in `patch` call it no longer accepts DOM node as a first argument.
+Now you need get initial `VNode` to patch it.
+So the `toVNode` call moved into core and called `read`.
+
+```typescript
+interface VDOMAPI<VData> {
+  read(node: Node): VNode<VData>;
+  patch(oldVNode: VNode<VData>, newVNode: VNode<VData>): VNode<VData>;
+}
+
+interface Init<VData> {
+  init(modules: Module<VData>[], api: DOMAPI): VDOMAPI<VData>;
+}
+```
+
+The proper way of bootstrapping in browser applications:
+
+```typescript
+const {read, patch} = init(modules, domApi);
+
+function render(newVNode: VNode) {
+  patch(vnode, newVNode);
+  vnode = newVNode;
+}
+
+// bootstrap
+let vnode = read(appNode);
+
+// first render
+render(appRender());
+```
+
+### Reorganized codebase
+
+Quite simple and tiny module _snabbdom/is_ now is away, the exported utilities merged into core (_snabbdom_).
+The _core_ also exports `isDef` which was converted into type guard:
+
+In order to avoid unnecessary dependencies the API declarations moved to the modules where it is actually used.
+Particularly the `DOMAPI` interface declared in core, i.e. into _snabbdom_ itself.
+
+The module _snabbdom/htmldomapi_ moved to _client/domapi_. So the server-side `DOMAPI` implementation will be at _server/domapi_.
+
+### Required `domApi` argument
+
+The second optional argument of `init` call (`domApi`) now is required.
+
+This allows to eliminate dependency from _snabbdom/htmldomapi_ when it redundant, for example, on server where HTML output is used.
+
+### Own APIs for modules
+
+To finally isolate platform-dependent code now the modules has own APIs to interact with DOM.
+
+This allow us to have two different API implementations: one to interact with document tree nodes in browsers and another to work with much simpler document tree on server.
+
+### The proper way of usage
+
+For example usage in browser environment may looks like so:
+
+```typescript
+import {VBaseData, VHooksData} from 'snabbdom/vnode';
+
+import {init} from 'snabbdom';
+
+// Importing modules
+import {attributesModule, VAttrsData} from 'snabbdom/modules/attributes';
+import {classModule, VClassData} from 'snabbdom/modules/class';
+import {styleModule, VStyleData} from 'snabbdom/modules/class';
+import {eventListenersModule, VEventData} from 'snabbdom/modules/eventlisteners';
+
+// Importing browser APIs
+import htmlDomApi from 'snabbdom/client/domapi';
+import attributesApi from 'snabbdom/client/attributes';
+import classApi from 'snabbdom/client/class';
+import styleApi from 'snabbdom/client/style';
+import eventListenersApi from 'snabbdom/client/eventlisteners';
+
+interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VStyleData {}
+
+const {read, patch} = init<VData>([
+  attributesModule(attributesApi),
+  classModule(classApi),
+  styleModule(styleApi),
+  eventListenersModule(eventListenersApi),
+], htmlDomApi);
+
+// bootstrap
+let vnode = read(document.documentElement);
+
+// render
+const newVNode = appRender();
+
+// patch
+patch(vnode, newVNode);
+vnode = newVNode;
+```
+
+And the usage on server environment will be like so:
+
+```typescript
+import {VBaseData, VHooksData} from 'snabbdom/vnode';
+
+import {init} from 'snabbdom';
+
+// Importing modules
+import {attributesModule, VAttrsData} from 'snabbdom/modules/attributes';
+import {classModule, VClassData} from 'snabbdom/modules/class';
+
+// We don't need render style property to HTML
+import {VStyleData} from 'snabbdom/modules/class';
+
+// We couldn't have event listeners in HTML
+import {VEventData} from 'snabbdom/modules/eventlisteners';
+
+// Importing html APIs
+import htmlDomApi from 'snabbdom/server/domapi';
+import attributesApi from 'snabbdom/server/attributes';
+import classApi from 'snabbdom/server/class';
+
+interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VStyleData {}
+
+const {read, patch} = init<VData>([
+  attributesModule(attributesApi),
+  classModule(classApi),
+], htmlDomApi);
+
+const documentElement = htmlDomApi.createElement('html');
+
+// bootstrap
+let vnode = read(documentElement);
+
+// render
+const newVNode = appRender();
+
+// patch
+patch(vnode, newVNode);
+vnode = newVNode;
+
+// output
+documentElement.toString();
+```
 
 ## Structuring applications
 
