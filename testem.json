@@ -1,13 +1,24 @@
 {
   "framework": "mocha",
   "src_files": [
-    "snabbdom.js",
+    "*.js",
+    "modules/*.js",
+    "client/*.js",
+    "server/*.js",
     "test/*.js"
   ],
   "serve_files": [
-    "browserified.js"
+    "test-out.js"
   ],
-  "before_tests": "browserify -d test/index.js -o browserified.js",
-  "on_exit": "rm browserified.js",
-  "launch_in_dev": [ "firefox", "chromium" ]
+  "browser_args": {
+    "chromium": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ]
+  },
+  "before_tests": "npm run compile-test",
+  "on_exit": "npm run clean-test",
+  "launch_in_ci": [ "firefox", "chromium" ],
+  "launch_in_dev": [ "firefox", "chromium" ],
+  "ignore_missing_launchers": true
 }

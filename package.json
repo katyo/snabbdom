@@ -26,7 +26,10 @@
   },
   "scripts": {
     "pretest": "npm run compile",
-    "test": "testem",
+    "test": "testem ci",
+    "test-dev": "testem",
+    "compile-test": "browserify -d test/index.js -o test-out.js",
+    "clean-test": "rm -f test-out.js",
     "compile": "npm run compile-es && npm run compile-commonjs",
     "compile-es": "tsc --outDir es --module es6 --moduleResolution node",
     "compile-commonjs": "tsc --outDir ./",
