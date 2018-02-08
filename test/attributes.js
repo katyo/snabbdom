@@ -127,9 +127,9 @@ describe('attributes', function() {
     it('can escape attribute values', function() {
       var elm = domApi.createElement('div');
       vdom.patch(vdom.read(elm), h('div', [
-        h('a', {attrs:{href:'http://example.com/#"snippets"'}}, 'Snippets')
+        h('a', {attrs:{href:'http://example.com/#"snippets"\''}}, 'Snippets')
       ]));
-      assert.equal(render(elm), '<div><a href="http://example.com/#\\"snippets\\"">Snippets</a></div>');
+      assert.equal(render(elm), "<div><a href=\"http://example.com/#&#34;snippets&#34;'\">Snippets</a></div>");
     });
   });
 });

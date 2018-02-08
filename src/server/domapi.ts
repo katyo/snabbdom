@@ -1,15 +1,15 @@
 import {DOMAPI, DOMSel} from '../snabbdom';
 
-const STR_CHARS_REGEX = /[\\"]/g;
+const STR_CHARS_REGEX = /["&]/g;
 
 function escapeStr(src: string): string {
-  return src.replace(STR_CHARS_REGEX, '\\$&');
+  return src.replace(STR_CHARS_REGEX, m => m == '"' ? '&#34;' : '&amp;');
 }
 
-const HTML_CHARS_REGEX = /[&<>"']/g;
+const HTML_CHARS_REGEX = /[<>&]/g;
 
 function escapeHtml(src: string): string {
-  return src.replace(HTML_CHARS_REGEX, m => m == '&' ? '&amp;' : m == '<' ? '&lt;' : m == '>' ? '&gt;' : m == '"' ? '&quot;' : '&#039;');
+  return src.replace(HTML_CHARS_REGEX, m => m == '<' ? '&lt;' : m == '>' ? '&gt;' : '&amp;');
 }
 
 export interface ToString {

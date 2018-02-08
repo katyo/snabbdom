@@ -1130,7 +1130,7 @@ describe('snabbdom', function() {
     it('can escape text content', function() {
       var elm = domApi.createElement('p');
       vdom.patch(vdom.read(elm), h('p', '<\'Hello\'&"world">'));
-      assert.equal(render(elm), '<p>&lt;&#039;Hello&#039;&amp;&quot;world&quot;&gt;</p>');
+      assert.equal(render(elm), "<p>&lt;'Hello'&amp;\"world\"&gt;</p>");
     });
   });
 });
