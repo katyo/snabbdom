@@ -1,4 +1,4 @@
-import {DOMAPI} from '../snabbdom';
+import {DOMAPI, DOMSel} from '../snabbdom';
 
 function createElement(tag: string, id?: string, cls?: string, nsUri?: string): Element {
   const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
@@ -39,8 +39,12 @@ function nextSibling(node: Node): Node | null {
   return node.nextSibling;
 }
 
-function tagName(elm: Element): string {
-  return elm.tagName;
+function getSelector(elm: Element): DOMSel {
+  return [
+    elm.tagName.toLowerCase(),
+    elm.getAttribute('id') || undefined,
+    elm.getAttribute('class') || undefined,
+  ];
 }
 
 function setTextContent(node: Node, text: string | null): void {
@@ -72,7 +76,7 @@ export const htmlDomApi: DOMAPI = {
   parentNode,
   firstChild,
   nextSibling,
-  tagName,
+  getSelector,
   setTextContent,
   getTextContent,
   isElement,

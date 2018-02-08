@@ -1,4 +1,4 @@
-import {DOMAPI} from '../snabbdom';
+import {DOMAPI, DOMSel} from '../snabbdom';
 
 const STR_CHARS_REGEX = /[\\"]/g;
 
@@ -124,8 +124,12 @@ function nextSibling(node: MockElement): MockElement | null {
   return null;
 }
 
-function tagName(elm: MockElement): string {
-  return elm.tag;
+function getSelector(elm: MockElement): DOMSel {
+  return [
+    elm.tag.toLowerCase(),
+    elm.attrs.id as string | undefined,
+    elm.class.length ? elm.class.join('.') : undefined,
+  ];
 }
 
 function setTextContent(node: MockElement, text: string | null): void {
@@ -157,7 +161,7 @@ export const htmlDomApi: DOMAPI = {
   parentNode,
   firstChild,
   nextSibling,
-  tagName,
+  getSelector,
   setTextContent,
   getTextContent,
   isElement,

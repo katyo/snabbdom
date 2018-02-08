@@ -3,6 +3,9 @@ import {Module, ModuleHooks} from './modules/module';
 import {Hooks} from './hooks';
 import {vnode, VNode, VBaseData, Key, VHooksData} from './vnode';
 
+// tag, id, class
+export type DOMSel = [string, string | undefined, string | undefined];
+
 export interface DOMAPI {
   createElement: (tag: string, id?: string, cls?: string, nsUri?: string) => Element;
   createTextNode: (text: string) => Text;
@@ -12,7 +15,7 @@ export interface DOMAPI {
   parentNode: (node: Node) => Node | null;
   firstChild: (node: Node) => Node | null;
   nextSibling: (node: Node) => Node | null;
-  tagName: (elm: Element) => string;
+  getSelector: (elm: Element) => DOMSel;
   setTextContent: (node: Node, text: string | null) => void;
   getTextContent: (node: Node) => string | null;
   isElement: (node: Node) => node is Element;
@@ -323,11 +326,8 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   function read(node: Node): VNode<VData> {
     let text: string;
     if (api.isElement(node)) {
-      const id = node.id ? '#' + node.id : '';
-      const cn = node.getAttribute('class');
-      const c = cn ? '.' + cn.split(' ').join('.') : '';
-      const sel = api.tagName(node).toLowerCase() + id + c;
-      const attrs: any = {};
+      const [tag, id, cls] = api.getSelector(node);
+      const sel = `${tag}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}`;
       const children: VNode<VData>[] = [];
       let name: string;
       let i: number, n: number;
