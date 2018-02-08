@@ -60,7 +60,7 @@ function createKeyToOldIdx<VData>(children: VNode<VData>[], beginIdx: number, en
   return map;
 }
 
-const hooks: (keyof Module<void>)[] = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
+const hooks: (keyof Module<void>)[] = ['read', 'create', 'update', 'remove', 'destroy', 'pre', 'post'];
 
 export interface VDOMAPI<VData> {
   read(node: Node): VNode<VData>;
@@ -136,12 +136,14 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     return vnode.elm;
   }
 
-  function addVnodes(parentElm: Node,
+  function addVnodes(
+    parentElm: Node,
     before: Node | null,
     vnodes: VNode<VData>[],
     startIdx: number,
     endIdx: number,
-    insertedVnodeQueue: VNodeQueue<VData>) {
+    insertedVnodeQueue: VNodeQueue<VData>
+  ) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx];
       if (ch != null) {
@@ -329,19 +331,14 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       const [tag, id, cls] = api.getSelector(node);
       const sel = `${tag}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}`;
       const children: VNode<VData>[] = [];
-      let name: string;
-      let i: number, n: number;
-      const elmAttrs = node.attributes;
-      for (i = 0, n = elmAttrs.length; i < n; i++) {
-        name = elmAttrs[i].nodeName;
-        if (name !== 'id' && name !== 'class') {
-          attrs[name] = elmAttrs[i].nodeValue;
-        }
+      for (let child = api.firstChild(node);
+        child != null;
+        child = api.nextSibling(child)) {
+        children.push(read(child));
       }
-      for (let elmChild = api.firstChild(node); elmChild !== null; elmChild = api.nextSibling(elmChild)) {
-        children.push(read(elmChild));
-      }
-      return vnode(sel, {attrs}, children, undefined, node);
+      const vn = vnode(sel, {}, children, undefined, node);
+      for (let i = 0; i < cbs.read.length; ++i) cbs.read[i](vn);
+      return vn;
     } else if (api.isText(node)) {
       text = api.getTextContent(node) as string;
       return vnode(undefined, undefined, undefined, text, node);

@@ -7,12 +7,26 @@ function nextFrame(fn: () => void) {
   });
 }
 
+function listStyle(elm: HTMLElement): string[] {
+  const style = elm.style;
+  const keys: string[] = [];
+  for (const key in style) {
+    if (style.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+}
+
+function getStyle(elm: HTMLElement, name: string): string {
+  return (elm.style as any)[name];
+}
+
 function setStyle(elm: HTMLElement, name: string, val: string, next: boolean = false) {
   const fn = name[0] === '-' && name[1] === '-' ?
-    function () {
+    () => {
       elm.style.setProperty(name, val);
-    } :
-    function () {
+    } : () => {
       (elm.style as any)[name] = val;
     };
 
@@ -44,6 +58,6 @@ function onTransEnd(elm: HTMLElement, names: string[], callback: () => void) {
   });
 }
 
-export const styleApi: StyleAPI = {setStyle, removeStyle, onTransEnd};
+export const styleApi: StyleAPI = {listStyle, getStyle, setStyle, removeStyle, onTransEnd};
 
 export default styleApi;

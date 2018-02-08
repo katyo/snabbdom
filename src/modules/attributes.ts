@@ -10,12 +10,27 @@ export interface VAttrsData {
 export type AttrVal = string | number | boolean;
 
 export interface AttrsAPI {
+  listAttrs(elm: Node): string[];
+  getAttr(elm: Node, key: string): AttrVal;
   setAttr(elm: Node, key: string, val: AttrVal): void;
   removeAttr(elm: Node, key: string): void;
 }
 
 export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
-  function updateAttrs(oldVnode: VNode<VAttrsData>, vnode: VNode<VAttrsData>): void {
+  function readAttrs(vnode: VNode<VAttrsData>) {
+    const elm = vnode.elm as Node,
+      keys = api.listAttrs(elm),
+      attrs: Attrs = {};
+    for (const key of keys) {
+      if (key != 'id' && key != 'class' &&
+        !(key.length > 5 && key[4] == '-' && key[0] == 'd' && key[1] == 'a' && key[2] == 't' && key[3] == 'a')) {
+        attrs[key] = api.getAttr(elm, key);
+      }
+    }
+    (vnode.data as VAttrsData).attrs = attrs;
+  }
+
+  function updateAttrs(oldVnode: VNode<VAttrsData>, vnode: VNode<VAttrsData>) {
     const elm = vnode.elm as Node;
     let key: string,
       {attrs: oldAttrs} = oldVnode.data as VAttrsData,
@@ -44,7 +59,7 @@ export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
     }
   }
 
-  return {create: updateAttrs, update: updateAttrs};
+  return {read: readAttrs, create: updateAttrs, update: updateAttrs};
 }
 
 export default attributesModule;

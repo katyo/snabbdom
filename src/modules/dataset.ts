@@ -8,12 +8,24 @@ export interface VDatasetData {
 }
 
 export interface DatasetAPI {
+  listDatas(elm: Node): string[];
+  getData(elm: Node, key: string): string;
   setData(node: Node, name: string, val: string): void;
   removeData(node: Node, name: string): void;
 }
 
 export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
-  function updateDataset(oldVnode: VNode<VDatasetData>, vnode: VNode<VDatasetData>): void {
+  function readDataset(vnode: VNode<VDatasetData>) {
+    const elm = vnode.elm as Node,
+      keys = api.listDatas(elm),
+      datas: Dataset = {};
+    for (const key of keys) {
+      datas[key] = api.getData(elm, key);
+    }
+    (vnode.data as VDatasetData).dataset = datas;
+  }
+
+  function updateDataset(oldVnode: VNode<VDatasetData>, vnode: VNode<VDatasetData>) {
     let elm: HTMLElement = vnode.elm as HTMLElement,
       oldDataset = (oldVnode.data as VDatasetData).dataset,
       dataset = (vnode.data as VDatasetData).dataset,
@@ -37,7 +49,7 @@ export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
     }
   }
 
-  return {create: updateDataset, update: updateDataset};
+  return {read: readDataset, create: updateDataset, update: updateDataset};
 }
 
 export default datasetModule;

@@ -13,13 +13,25 @@ export interface VStyleData {
 }
 
 export interface StyleAPI {
+  listStyle(elm: Node): string[];
+  getStyle(elm: Node, name: string): string;
   setStyle(elm: Node, name: string, val: string, next?: boolean): void;
   removeStyle(elm: Node, name: string): void;
   onTransEnd(elm: Node, names: string[], callback: () => void): void;
 }
 
 export function styleModule(api: StyleAPI): Module<VStyleData> {
-  function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>): void {
+  function readStyle(vnode: VNode<VStyleData>) {
+    const elm = vnode.elm as Node;
+    const keys = api.listStyle(elm);
+    const style: StylesData = {};
+    for (const key of keys) {
+      style[key] = api.getStyle(elm, key);
+    }
+    (vnode.data as VStyleData).style = style;
+  }
+
+  function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>) {
     const elm = vnode.elm as Node;
     let cur: any, name: string,
       {style: oldStyle} = oldVnode.data as VStyleData,
@@ -53,7 +65,7 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
     }
   }
 
-  function applyDestroyStyle(vnode: VNode<VStyleData>): void {
+  function applyDestroyStyle(vnode: VNode<VStyleData>) {
     const elm = vnode.elm as Node,
       {style: s} = vnode.data as VStyleData;
     let style: any, name: string;
@@ -63,7 +75,7 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
     }
   }
 
-  function applyRemoveStyle(vnode: VNode<VStyleData>, rm: () => void): void {
+  function applyRemoveStyle(vnode: VNode<VStyleData>, rm: () => void) {
     const {style: s} = vnode.data as VStyleData;
     if (!s || !s.remove) {
       rm();
@@ -81,6 +93,7 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
   }
 
   return {
+    read: readStyle,
     create: updateStyle,
     update: updateStyle,
     destroy: applyDestroyStyle,

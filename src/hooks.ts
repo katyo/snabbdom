@@ -10,6 +10,7 @@ export type PostPatchHook<VData> = (oldVNode: VNode<VData>, vNode: VNode<VData>)
 export type DestroyHook<VData> = (vNode: VNode<VData>) => void;
 export type RemoveHook<VData> = (vNode: VNode<VData>, removeCallback: () => void) => void;
 export type PostHook = () => void;
+export type ReadHook<VData> = (vnode: VNode<VData>) => void;
 
 export interface Hooks<VData> {
   pre?: PreHook;

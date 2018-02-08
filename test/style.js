@@ -131,6 +131,7 @@ describe('style', function() {
       assert.strictEqual(elm.childNodes[0].textContent, 'Hi');
     });
   });
+  
 });
 
 fakeRaf.restore();

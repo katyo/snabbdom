@@ -7,6 +7,20 @@ type SetAttributeNS = (namespaceURI: string, qualifiedName: string, value: strin
 const xlinkNS = 'http://www.w3.org/1999/xlink';
 const xmlNS = 'http://www.w3.org/XML/1998/namespace';
 
+function listAttrs(elm: Element): string[] {
+  const {attributes} = elm;
+  const keys: string[] = [];
+  for (let i = 0, n = attributes.length; i < n; i++) {
+    const key = attributes[i].nodeName;
+    keys.push(key);
+  }
+  return keys;
+}
+
+function getAttr(elm: Element, key: string): AttrVal {
+  return elm.getAttribute(key) as AttrVal;
+}
+
 function setAttr(elm: Element, key: string, val: AttrVal) {
   if (val === true) {
     elm.setAttribute(key, "");
@@ -31,6 +45,6 @@ function removeAttr(elm: Element, key: string) {
   elm.removeAttribute(key);
 }
 
-export const attributesApi: AttrsAPI = {setAttr, removeAttr};
+export const attributesApi: AttrsAPI = {listAttrs, getAttr, setAttr, removeAttr};
 
 export default attributesApi;

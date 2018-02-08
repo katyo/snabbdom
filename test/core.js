@@ -340,7 +340,13 @@ describe('snabbdom', function() {
       });
       it('can work with domApi', function () {
         var domApi = Object.assign({}, htmlDomApi, {
-            tagName: function(elm) { return 'x-' + elm.tagName.toUpperCase(); }
+          getSelector: function(elm) {
+            return [
+              'x-' + elm.tagName.toLowerCase(),
+              elm.id || undefined,
+              elm.className ? elm.className : undefined,
+            ];
+          }
         });
         var read = snabbdom.init([], domApi).read;
         var h2 = document.createElement('h2');
@@ -355,9 +361,7 @@ describe('snabbdom', function() {
         elm.appendChild(text);
         var vnode = read(elm);
         assert.equal(vnode.sel, 'x-div#id.class.other');
-        assert.deepEqual(vnode.data, {attrs: {'data': 'value'}});
         assert.equal(vnode.children[0].sel, 'x-h2#hx');
-        assert.deepEqual(vnode.children[0].data, {attrs: {'data-env': 'xyz'}});
         assert.equal(vnode.children[1].text, 'Foobar');
       });
     });
