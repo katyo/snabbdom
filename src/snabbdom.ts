@@ -4,8 +4,7 @@ import {Hooks} from './hooks';
 import {vnode, VNode, VBaseData, Key, VHooksData} from './vnode';
 
 export interface DOMAPI {
-  createElement: (tagName: string) => HTMLElement;
-  createElementNS: (namespaceURI: string, qualifiedName: string) => Element;
+  createElement: (tag: string, id?: string, cls?: string, nsUri?: string) => Element;
   createTextNode: (text: string) => Text;
   createComment: (text: string) => Comment;
   insertChild: (parentNode: Node, newNode: Node, referenceNode?: Node | null) => void;
@@ -108,10 +107,10 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       const hash = hashIdx > 0 ? hashIdx : sel.length;
       const dot = dotIdx > 0 ? dotIdx : sel.length;
       const tag = hashIdx !== -1 || dotIdx !== -1 ? sel.slice(0, Math.min(hash, dot)) : sel;
-      const elm = vnode.elm = isDef(data) && isDef(i = (data as VData).ns) ?
-        api.createElementNS(i, tag) : api.createElement(tag);
-      if (hash < dot) elm.setAttribute('id', sel.slice(hash + 1, dot));
-      if (dotIdx > 0) elm.setAttribute('class', sel.slice(dot + 1).replace(/\./g, ' '));
+      const elm = vnode.elm = api.createElement(tag,
+        hash < dot ? sel.slice(hash + 1, dot) : undefined,
+        dotIdx > 0 ? sel.slice(dot + 1).replace(/\./g, ' ') : undefined,
+        isDef(data) ? (data as VData).ns : undefined);
       for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyNode as VNode<VData>, vnode);
       if (isArray(children)) {
         for (i = 0; i < children.length; ++i) {

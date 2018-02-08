@@ -73,12 +73,11 @@ export class MockElement implements ToString {
   }
 }
 
-function createElement(tagName: string): MockElement {
-  return new MockElement(tagName);
-}
-
-function createElementNS(namespaceURI: string, qualifiedName: string): MockElement {
-  return new MockElement(qualifiedName, namespaceURI);
+function createElement(tag: string, id?: string, cls?: string, nsUri?: string): MockElement {
+  const elm = new MockElement(tag, nsUri);
+  if (id) elm.attrs.id = id;
+  if (cls) elm.class = cls.split(/ /);
+  return elm;
 }
 
 function createTextNode(text: string): MockElement {
@@ -151,7 +150,6 @@ function isComment(node: MockElement): boolean {
 
 export const htmlDomApi: DOMAPI = {
   createElement,
-  createElementNS,
   createTextNode,
   createComment,
   insertChild,

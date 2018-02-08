@@ -1,11 +1,10 @@
 import {DOMAPI} from '../snabbdom';
 
-function createElement(tagName: string): HTMLElement {
-  return document.createElement(tagName);
-}
-
-function createElementNS(namespaceURI: string, qualifiedName: string): Element {
-  return document.createElementNS(namespaceURI, qualifiedName);
+function createElement(tag: string, id?: string, cls?: string, nsUri?: string): Element {
+  const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
+  if (id) elm.setAttribute('id', id);
+  if (cls) elm.setAttribute('class', cls);
+  return elm;
 }
 
 function createTextNode(text: string): Text {
@@ -66,7 +65,6 @@ function isComment(node: Node): node is Comment {
 
 export const htmlDomApi: DOMAPI = {
   createElement,
-  createElementNS,
   createTextNode,
   createComment,
   insertChild,
