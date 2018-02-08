@@ -89,7 +89,7 @@ function createComment(text: string): MockElement {
   return new MockElement('!', undefined, text);
 }
 
-function insertBefore(parentNode: MockElement, newNode: MockElement, referenceNode: MockElement | null): void {
+function insertChild(parentNode: MockElement, newNode: MockElement, referenceNode?: MockElement | null): void {
   const {nodes} = parentNode;
   const index = referenceNode ? nodes.indexOf(referenceNode) : nodes.length;
   if (index != -1) {
@@ -104,11 +104,6 @@ function removeChild(node: MockElement, child: MockElement): void {
     child.parent = null;
     node.nodes.splice(index, 1);
   }
-}
-
-function appendChild(node: MockElement, child: MockElement): void {
-  node.nodes.push(child);
-  child.parent = node;
 }
 
 function parentNode(node: MockElement): MockElement | null {
@@ -159,9 +154,8 @@ export const htmlDomApi: DOMAPI = {
   createElementNS,
   createTextNode,
   createComment,
-  insertBefore,
+  insertChild,
   removeChild,
-  appendChild,
   parentNode,
   firstChild,
   nextSibling,

@@ -16,16 +16,16 @@ function createComment(text: string): Comment {
   return document.createComment(text);
 }
 
-function insertBefore(parentNode: Node, newNode: Node, referenceNode: Node | null): void {
-  parentNode.insertBefore(newNode, referenceNode);
+function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
+  if (referenceNode) {
+    parentNode.insertBefore(newNode, referenceNode);
+  } else {
+    parentNode.appendChild(newNode);
+  }
 }
 
 function removeChild(node: Node, child: Node): void {
   node.removeChild(child);
-}
-
-function appendChild(node: Node, child: Node): void {
-  node.appendChild(child);
 }
 
 function parentNode(node: Node): Node | null {
@@ -69,9 +69,8 @@ export const htmlDomApi: DOMAPI = {
   createElementNS,
   createTextNode,
   createComment,
-  insertBefore,
+  insertChild,
   removeChild,
-  appendChild,
   parentNode,
   firstChild,
   nextSibling,

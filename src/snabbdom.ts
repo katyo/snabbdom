@@ -8,9 +8,8 @@ export interface DOMAPI {
   createElementNS: (namespaceURI: string, qualifiedName: string) => Element;
   createTextNode: (text: string) => Text;
   createComment: (text: string) => Comment;
-  insertBefore: (parentNode: Node, newNode: Node, referenceNode: Node | null) => void;
+  insertChild: (parentNode: Node, newNode: Node, referenceNode?: Node | null) => void;
   removeChild: (node: Node, child: Node) => void;
-  appendChild: (node: Node, child: Node) => void;
   parentNode: (node: Node) => Node | null;
   firstChild: (node: Node) => Node | null;
   nextSibling: (node: Node) => Node | null;
@@ -118,11 +117,11 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         for (i = 0; i < children.length; ++i) {
           const ch = children[i];
           if (ch != null) {
-            api.appendChild(elm, createElm(ch as VNode<VData>, insertedVnodeQueue));
+            api.insertChild(elm, createElm(ch as VNode<VData>, insertedVnodeQueue));
           }
         }
       } else if (isPrimitive(vnode.text)) {
-        api.appendChild(elm, api.createTextNode(vnode.text));
+        api.insertChild(elm, api.createTextNode(vnode.text));
       }
       i = (vnode.data as VData).hook; // Reuse variable
       if (isDef(i)) {
@@ -144,7 +143,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx];
       if (ch != null) {
-        api.insertBefore(parentElm, createElm(ch, insertedVnodeQueue), before);
+        api.insertChild(parentElm, createElm(ch, insertedVnodeQueue), before);
       }
     }
   }
@@ -224,12 +223,12 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         newEndVnode = newCh[--newEndIdx];
       } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
-        api.insertBefore(parentElm, oldStartVnode.elm as Node, api.nextSibling(oldEndVnode.elm as Node));
+        api.insertChild(parentElm, oldStartVnode.elm as Node, api.nextSibling(oldEndVnode.elm as Node));
         oldStartVnode = oldCh[++oldStartIdx];
         newEndVnode = newCh[--newEndIdx];
       } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue);
-        api.insertBefore(parentElm, oldEndVnode.elm as Node, oldStartVnode.elm as Node);
+        api.insertChild(parentElm, oldEndVnode.elm as Node, oldStartVnode.elm as Node);
         oldEndVnode = oldCh[--oldEndIdx];
         newStartVnode = newCh[++newStartIdx];
       } else {
@@ -238,16 +237,16 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         }
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
         if (!isDef(idxInOld)) { // New element
-          api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
+          api.insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           newStartVnode = newCh[++newStartIdx];
         } else {
           elmToMove = oldCh[idxInOld];
           if (elmToMove.sel !== newStartVnode.sel) {
-            api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
+            api.insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           } else {
             patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
             oldCh[idxInOld] = undefined as any;
-            api.insertBefore(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node);
+            api.insertChild(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node);
           }
           newStartVnode = newCh[++newStartIdx];
         }
@@ -310,7 +309,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       createElm(vnode, insertedVnodeQueue);
 
       if (parent !== null) {
-        api.insertBefore(parent, vnode.elm as Node, api.nextSibling(elm));
+        api.insertChild(parent, vnode.elm as Node, api.nextSibling(elm));
         removeVnodes(parent, [oldVnode], 0, 0);
       }
     }
