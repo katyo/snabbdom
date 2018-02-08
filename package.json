@@ -1,6 +1,6 @@
 {
-  "name": "snabbdom",
-  "version": "0.7.1",
+  "name": "snabbdom-ng",
+  "version": "0.7.1-ng.0",
   "description": "A virtual DOM library with focus on simplicity, modularity, powerful features and performance.",
   "main": "snabbdom.js",
   "module": "es/snabbdom.js",
@@ -53,7 +53,7 @@
   "author": "Simon Friis Vindum",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/paldepind/snabbdom/issues"
+    "url": "https://github.com/katyo/snabbdom/issues"
   },
-  "homepage": "https://github.com/paldepind/snabbdom#readme"
+  "homepage": "https://github.com/katyo/snabbdom/tree/nextgen#changes-and-improvements"
 }
