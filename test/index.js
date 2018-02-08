@@ -1,4 +1,4 @@
-htmlDomApi = require('../client/domapi').htmlDomApi;
+htmlDomApi = require('../client/domapi').default(document);
 require('./core');
 require('./style');
 require('./dataset');

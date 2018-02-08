@@ -1,20 +1,5 @@
 import {DOMAPI, DOMSel} from '../snabbdom';
 
-function createElement(tag: string, id?: string, cls?: string, nsUri?: string): Element {
-  const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
-  if (id) elm.setAttribute('id', id);
-  if (cls) elm.setAttribute('class', cls);
-  return elm;
-}
-
-function createTextNode(text: string): Text {
-  return document.createTextNode(text);
-}
-
-function createComment(text: string): Comment {
-  return document.createComment(text);
-}
-
 function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
   if (referenceNode) {
     parentNode.insertBefore(newNode, referenceNode);
@@ -67,21 +52,38 @@ function isComment(node: Node): node is Comment {
   return node.nodeType === 8;
 }
 
-export const htmlDomApi: DOMAPI = {
-  createElement,
-  createTextNode,
-  createComment,
-  insertChild,
-  removeChild,
-  parentNode,
-  firstChild,
-  nextSibling,
-  getSelector,
-  setTextContent,
-  getTextContent,
-  isElement,
-  isText,
-  isComment,
-};
+export function htmlDomApi(document: Document): DOMAPI {
+  function createElement(tag: string, id?: string, cls?: string, nsUri?: string): Element {
+    const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
+    if (id) elm.setAttribute('id', id);
+    if (cls) elm.setAttribute('class', cls);
+    return elm;
+  }
+
+  function createTextNode(text: string): Text {
+    return document.createTextNode(text);
+  }
+
+  function createComment(text: string): Comment {
+    return document.createComment(text);
+  }
+
+  return {
+    createElement,
+    createTextNode,
+    createComment,
+    insertChild,
+    removeChild,
+    parentNode,
+    firstChild,
+    nextSibling,
+    getSelector,
+    setTextContent,
+    getTextContent,
+    isElement,
+    isText,
+    isComment,
+  };
+}
 
 export default htmlDomApi;

@@ -7,7 +7,7 @@ and performance.
 
 [![Join the chat at https://gitter.im/paldepind/snabbdom](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/paldepind/snabbdom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-__IMPORTANT NOTE:__ _This is a fork of original snabbdom with partially incompatible API. See the [differences](#fork-differences) to know more._
+__IMPORTANT NOTE:__ _This is a fork of original snabbdom with partially incompatible API. See the [changes and improvements](#changes-and-improvements) to know more._
 
 ## Table of contents
 
@@ -19,7 +19,7 @@ __IMPORTANT NOTE:__ _This is a fork of original snabbdom with partially incompat
 * [Modules documentation](#modules-documentation)
 * [Helpers](#helpers)
 * [Virtual Node documentation](#virtual-node)
-* [Differences from original](#fork-differences)
+* [Changes and improvements](#changes-and-improvements)
 * [Structuring applications](#structuring-applications)
 
 ## Why
@@ -81,7 +81,7 @@ var vdom = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
   require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
   require('snabbdom/modules/eventlisteners').default(eventApi), // attaches event listeners
-], htmlDomApi);
+], htmlDomApi(document));
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes
@@ -133,7 +133,7 @@ to patching DOM using the previous and the next virtual nodes.
 var vdom = snabbdom.init([
   require('snabbdom/modules/class').default(classApi),
   require('snabbdom/modules/style').default(styleApi),
-], htmlDomApi);
+], htmlDomApi(document));
 var read = vdom.read;
 var patch = vdom.patch;
 ```
@@ -158,7 +158,7 @@ var vdom = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
   require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
   require('snabbdom/modules/eventlisteners').default(eventListenersApi), // attaches event listeners
-], htmlDomApi);
+], htmlDomApi(document));
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes
@@ -703,7 +703,7 @@ an object, where `.key` is the key and the value is the
 For example: `h('div', {key: 1}, [])` will create a virtual node
 object with a `.key` property with the value of `1`.
 
-## Fork differences
+## Changes and improvements
 
 ### Parametrized VNode
 
@@ -737,7 +737,7 @@ interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData {}
 let vdom = init<VData>([
   attributesModule(attributesApi),
   classModule(classApi)
-]);
+], domApi);
 ```
 
 ### The `toVNode` merged into core
@@ -790,6 +790,10 @@ The second optional argument of `init` call (`domApi`) now is required.
 
 This allows to eliminate dependency from _snabbdom/htmldomapi_ when it redundant, for example, on server where HTML output is used.
 
+### Instantiating `htmlDomApi` with custom `document`
+
+Now the `htmlDomApi` is a function which required `document` as argument to make it possible to use any other DOM libraries (like _jsdom_, _dom.js_, _cheerio_, _domino_ and etc.) both on client and server.
+
 ### Own APIs for modules
 
 To finally isolate platform-dependent code now the modules has own APIs to interact with DOM.
@@ -825,7 +829,7 @@ const {read, patch} = init<VData>([
   classModule(classApi),
   styleModule(styleApi),
   eventListenersModule(eventListenersApi),
-], htmlDomApi);
+], htmlDomApi(document));
 
 // bootstrap
 let vnode = read(document.documentElement);

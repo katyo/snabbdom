@@ -25,7 +25,7 @@ export const snabbdomModules: Module<VData>[] = [
   datasetModule(datasetApi),
 ];
 // Init patch function with choosen modules
-const {read, patch} = init(snabbdomModules, htmlDomApi);
+const {read, patch} = init(snabbdomModules, htmlDomApi(document));
 export {VNode, Module, ModuleHooks};
 export const snabbdomBundle = {read, patch, h};
 export default snabbdomBundle;
