@@ -18,6 +18,13 @@ function addNS<VData extends VBaseData>(data: VData, children: VNodes<VData> | u
   }
 }
 
+export interface H<VData extends VBaseData> {
+  (sel: string): VNode<VData>;
+  (sel: string, data: VData): VNode<VData>;
+  (sel: string, children: VNodeChildren<VData>): VNode<VData>;
+  (sel: string, data: VData, children: VNodeChildren<VData>): VNode<VData>;
+}
+
 export function h<VData extends VBaseData>(sel: string): VNode<VData>;
 export function h<VData extends VBaseData>(sel: string, data: VData): VNode<VData>;
 export function h<VData extends VBaseData>(sel: string, children: VNodeChildren<VData>): VNode<VData>;
