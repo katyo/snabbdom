@@ -4,6 +4,7 @@
 # Logs
 logs
 *.log
+*.log*
 
 # Runtime data
 pids
@@ -31,3 +32,9 @@ node_modules
 
 # Vim
 *.swp
+
+# Travis-CI
+.travis.yml
+
+# Emacs
+.dir-locals.el
