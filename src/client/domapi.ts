@@ -1,4 +1,4 @@
-import {DOMAPI, DOMSel} from '../snabbdom';
+import {DOMAPI, parseSel, buildSel, selAttr} from '../snabbdom';
 
 function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
   if (referenceNode) {
@@ -24,12 +24,14 @@ function nextSibling(node: Node): Node | null {
   return node.nextSibling;
 }
 
-function getSelector(elm: Element): DOMSel {
-  return [
-    elm.tagName.toLowerCase(),
-    elm.getAttribute('id') || undefined,
-    elm.getAttribute('class') || undefined,
-  ];
+function getSelector(elm: Element): string {
+  const tag = elm.tagName.toLowerCase();
+  const sel = elm.getAttribute(selAttr);
+  if (sel) {
+    const {id, cls} = parseSel(sel);
+    return buildSel({tag, id, cls});
+  }
+  return tag;
 }
 
 function setTextContent(node: Node, text: string | null): void {
@@ -53,10 +55,14 @@ function isComment(node: Node): node is Comment {
 }
 
 export function htmlDomApi(document: Document): DOMAPI {
-  function createElement(tag: string, id?: string, cls?: string, nsUri?: string): Element {
+  function createElement(sel: string, nsUri?: string): Element {
+    const {tag, id, cls} = parseSel(sel);
     const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
     if (id) elm.setAttribute('id', id);
     if (cls) elm.setAttribute('class', cls);
+    if (id || cls) { // preserve original selector
+      elm.setAttribute(selAttr, buildSel({tag: '', id, cls}));
+    }
     return elm;
   }
 

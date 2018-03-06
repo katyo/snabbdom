@@ -187,6 +187,7 @@ describe('snabbdom', function() {
       var elmWithIdAndClass = document.createElement('div');
       elmWithIdAndClass.id = 'id';
       elmWithIdAndClass.className = 'class';
+      elmWithIdAndClass.dataset.sel = '#id.class';
       var vnode1 = h('div#id.class', [h('span', 'Hi')]);
       elm = patch(read(elmWithIdAndClass), vnode1).elm;
       assert.strictEqual(elm, elmWithIdAndClass);
@@ -271,6 +272,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
+        prevElm.dataset.sel = '#id.class';
         prevElm.appendChild(h2);
         var nextVNode = h('div#id.class', [h('span', 'Hi')]);
         elm = patch(read(prevElm), nextVNode).elm;
@@ -304,6 +306,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
+        prevElm.dataset.sel = '#id.class';
         var text = new Text('Foobar');
         text.testProperty = function () {}; // ensures we dont recreate the Text Node
         prevElm.appendChild(text);
@@ -325,6 +328,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
+        prevElm.dataset.sel = '#id.class';
         var text = new Text('Foobar');
         prevElm.appendChild(text);
         prevElm.appendChild(h2);
@@ -341,11 +345,11 @@ describe('snabbdom', function() {
       it('can work with domApi', function () {
         var domApi = Object.assign({}, htmlDomApi, {
           getSelector: function(elm) {
-            return [
-              'x-' + elm.tagName.toLowerCase(),
-              elm.id || undefined,
-              elm.className ? elm.className : undefined,
-            ];
+            return snabbdom.buildSel({
+              tag: 'x-' + elm.tagName.toLowerCase(),
+              id: elm.id,
+              cls: elm.className,
+            });
           }
         });
         var read = snabbdom.init([], domApi).read;

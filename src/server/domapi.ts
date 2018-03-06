@@ -1,4 +1,4 @@
-import {DOMAPI, DOMSel} from '../snabbdom';
+import {DOMAPI, parseSel, buildSel, selAttr} from '../snabbdom';
 
 const STR_CHARS_REGEX = /["&]/g;
 
@@ -73,10 +73,14 @@ export class MockElement implements ToString {
   }
 }
 
-function createElement(tag: string, id?: string, cls?: string, nsUri?: string): MockElement {
+function createElement(sel: string, nsUri?: string): MockElement {
+  const {tag, id, cls} = parseSel(sel);
   const elm = new MockElement(tag, nsUri);
   if (id) elm.attrs.id = id;
   if (cls) elm.class = cls.split(/ /);
+  if (id || cls) { // save original selector to restore on client
+    elm.attrs[selAttr] = buildSel({tag: '', id, cls});
+  }
   return elm;
 }
 
@@ -124,12 +128,14 @@ function nextSibling(node: MockElement): MockElement | null {
   return null;
 }
 
-function getSelector(elm: MockElement): DOMSel {
-  return [
-    elm.tag.toLowerCase(),
-    elm.attrs.id as string | undefined,
-    elm.class.length ? elm.class.join('.') : undefined,
-  ];
+function getSelector(elm: MockElement): string {
+  const tag = elm.tag.toLowerCase();
+  const sel = elm.attrs[selAttr] as string | void;
+  if (sel) {
+    const {id, cls} = parseSel(sel);
+    return buildSel({tag, id, cls});
+  }
+  return tag;
 }
 
 function setTextContent(node: MockElement, text: string | null): void {
