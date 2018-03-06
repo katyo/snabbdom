@@ -34,23 +34,44 @@ export function isDef<Type>(s: Type | undefined): s is Type {
 export interface Selector {
   tag?: string;
   id?: string;
-  cls?: string;
-  key?: VKey;
+  cls?: string[];
 }
-
-export const selAttr = 'data-sel';
 
 // tag?, id?, class?, num-key?, str-key?
 const selRegExp = /^([^#\.$@]+)?(?:#([^\.$@]+))?(?:\.([^$@]+))?(?:[$](.+))?(?:@(.*))?$/;
 
 export function parseSel(sel: string): Selector {
-  const [, tag, id, cls, nkey, skey] = sel.match(selRegExp) as RegExpMatchArray;
-  return {tag, id, cls: cls && cls.replace(/\./g, ' '), key: skey != null ? skey : parseFloat(nkey)};
+  const [, tag, id, cls] = sel.match(selRegExp) as RegExpMatchArray;
+  return {tag, id, cls: cls ? cls.split(/\./) : undefined};
 }
 
-export function buildSel({tag, id, cls, key}: Selector): string {
-  return `${tag || ''}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}${key !== undefined ? (typeof key == 'number' ? '$' : '@') + key : ''}`;
+export function buildSel({tag, id, cls}: Selector): string {
+  return `${tag || ''}${id ? '#' + id : ''}${cls ? '.' + cls.join('.') : ''}`;
 }
+
+export interface KeyInfo {
+  id?: true;    // has id
+  cls?: number; // has first N classes
+  key?: VKey;   // has key
+}
+
+// has-id, num-class, num-key?, str-key?
+const keyRegExp = /^(#)?(?:\.(\d*))?(?:[$](.+))?(?:@(.*))?$/;
+
+export function parseKey(sel: string): KeyInfo {
+  const [, id, cls, nkey, skey] = sel.match(keyRegExp) as RegExpMatchArray;
+  return {
+    id: id === '#' ? true : undefined,
+    cls: cls === '' ? 1 : cls ? parseInt(cls) : undefined,
+    key: nkey != null ? parseFloat(nkey) : skey
+  };
+}
+
+export function buildKey({id, cls, key}: KeyInfo): string {
+  return `${id ? '#' : ''}${cls ? '.' + (cls > 1 ? cls : '') : ''}${key !== undefined ? (typeof key == 'number' ? '$' : '@') + key : ''}`;
+}
+
+export const selAttr = 'data-sel';
 
 type VNodeQueue<VData> = VNode<VData>[];
 

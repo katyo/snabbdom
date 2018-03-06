@@ -1,5 +1,5 @@
 import {VKey} from '../vnode';
-import {DOMAPI, parseSel, buildSel, selAttr} from '../snabbdom';
+import {DOMAPI, parseSel, buildSel, parseKey, buildKey, selAttr} from '../snabbdom';
 
 function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
   if (referenceNode) {
@@ -29,8 +29,12 @@ function getSelector(elm: Element): [string, VKey | void] {
   const tag = elm.tagName.toLowerCase();
   const sel = elm.getAttribute(selAttr);
   if (sel) {
-    const {id, cls, key} = parseSel(sel);
-    return [buildSel({tag, id, cls}), key];
+    const {id, cls, key} = parseKey(sel);
+    return [buildSel({
+      tag,
+      id: id && elm.getAttribute('id') || undefined,
+      cls: cls && (elm.getAttribute('class') || '').split(/ /).slice(0, cls) || undefined
+    }), key];
   }
   return [tag, undefined];
 }
@@ -62,9 +66,13 @@ export function htmlDomApi(document: Document): DOMAPI {
       document.createElementNS(nsUri, tag as string) :
       document.createElement(tag as string);
     if (id) elm.setAttribute('id', id);
-    if (cls) elm.setAttribute('class', cls);
+    if (cls) elm.setAttribute('class', cls.join(' '));
     if (id || cls || key) { // preserve original selector
-      elm.setAttribute(selAttr, buildSel({id, cls, key}));
+      elm.setAttribute(selAttr, buildKey({
+        id: id ? true : undefined,
+        cls: cls ? cls.length : undefined,
+        key
+      }));
     }
     return elm;
   }

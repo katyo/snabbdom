@@ -187,7 +187,7 @@ describe('snabbdom', function() {
       var elmWithIdAndClass = document.createElement('div');
       elmWithIdAndClass.id = 'id';
       elmWithIdAndClass.className = 'class';
-      elmWithIdAndClass.dataset.sel = '#id.class';
+      elmWithIdAndClass.dataset.sel = '#.';
       var vnode1 = h('div#id.class', [h('span', 'Hi')]);
       elm = patch(read(elmWithIdAndClass), vnode1).elm;
       assert.strictEqual(elm, elmWithIdAndClass);
@@ -272,7 +272,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
-        prevElm.dataset.sel = '#id.class';
+        prevElm.dataset.sel = '#.';
         prevElm.appendChild(h2);
         var nextVNode = h('div#id.class', [h('span', 'Hi')]);
         elm = patch(read(prevElm), nextVNode).elm;
@@ -306,7 +306,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
-        prevElm.dataset.sel = '#id.class';
+        prevElm.dataset.sel = '#.';
         var text = new Text('Foobar');
         text.testProperty = function () {}; // ensures we dont recreate the Text Node
         prevElm.appendChild(text);
@@ -328,7 +328,7 @@ describe('snabbdom', function() {
         var prevElm = document.createElement('div');
         prevElm.id = 'id';
         prevElm.className = 'class';
-        prevElm.dataset.sel = '#id.class';
+        prevElm.dataset.sel = '#.';
         var text = new Text('Foobar');
         prevElm.appendChild(text);
         prevElm.appendChild(h2);
@@ -348,7 +348,7 @@ describe('snabbdom', function() {
             return [snabbdom.buildSel({
               tag: 'x-' + elm.tagName.toLowerCase(),
               id: elm.id,
-              cls: elm.className,
+              cls: elm.className ? elm.className.split(/ /) : undefined,
             }), undefined];
           }
         });
