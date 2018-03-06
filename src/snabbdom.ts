@@ -41,7 +41,7 @@ export interface Selector {
 export const selAttr = 'data-sel';
 
 // tag?, id?, class?, num-key?, str-key?
-const selRegExp = /^([^#\.$@]+)?(?:#([^\.$@]+))?(?:\.([^$@]+))?(?:$(.+))?(?:@(.*))?$/;
+const selRegExp = /^([^#\.$@]+)?(?:#([^\.$@]+))?(?:\.([^$@]+))?(?:[$](.+))?(?:@(.*))?$/;
 
 export function parseSel(sel: string): Selector {
   const [, tag, id, cls, nkey, skey] = sel.match(selRegExp) as RegExpMatchArray;
