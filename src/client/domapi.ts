@@ -1,5 +1,5 @@
 import {VKey} from '../vnode';
-import {DOMAPI, parseSel, buildSel, parseKey, buildKey, selAttr} from '../snabbdom';
+import {DOMAPI, parseSel, buildSel, parseKey, buildKey, selAttr, isDef} from '../snabbdom';
 
 function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
   if (referenceNode) {
@@ -67,7 +67,7 @@ export function htmlDomApi(document: Document): DOMAPI {
       document.createElement(tag as string);
     if (id) elm.setAttribute('id', id);
     if (cls) elm.setAttribute('class', cls.join(' '));
-    if (id || cls || key) { // preserve original selector
+    if (id || cls || isDef(key)) { // preserve original selector
       elm.setAttribute(selAttr, buildKey({
         id: id ? true : undefined,
         cls: cls ? cls.length : undefined,

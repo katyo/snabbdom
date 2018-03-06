@@ -1,5 +1,5 @@
 import {VKey} from '../vnode';
-import {DOMAPI, parseSel, buildSel, parseKey, buildKey, selAttr} from '../snabbdom';
+import {DOMAPI, parseSel, buildSel, parseKey, buildKey, selAttr, isDef} from '../snabbdom';
 
 const STR_CHARS_REGEX = /["&]/g;
 
@@ -79,7 +79,7 @@ function createElement(sel: string, key?: VKey, nsUri?: string): MockElement {
   const elm = new MockElement(tag as string, nsUri);
   if (id) elm.attrs.id = id;
   if (cls) elm.class = cls;
-  if (id || cls || key) { // save original selector to restore on client
+  if (id || cls || isDef(key)) { // save original selector to restore on client
     elm.attrs[selAttr] = buildKey({
       id: id ? true : undefined,
       cls: cls ? cls.length : undefined,
