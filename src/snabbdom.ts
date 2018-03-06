@@ -4,7 +4,7 @@ import {Hooks} from './hooks';
 import {vnode, VNode, VBaseData, Key, VHooksData} from './vnode';
 
 export interface DOMAPI {
-  createElement: (sel: string, nsUri?: string) => Element;
+  createElement: (sel: string, key?: Key, nsUri?: string) => Element;
   createTextNode: (text: string) => Text;
   createComment: (text: string) => Comment;
   insertChild: (parentNode: Node, newNode: Node, referenceNode?: Node | null) => void;
@@ -12,7 +12,7 @@ export interface DOMAPI {
   parentNode: (node: Node) => Node | null;
   firstChild: (node: Node) => Node | null;
   nextSibling: (node: Node) => Node | null;
-  getSelector: (elm: Element) => string;
+  getSelector: (elm: Element) => [string, Key | void];
   setTextContent: (node: Node, text: string | null) => void;
   getTextContent: (node: Node) => string | null;
   isElement: (node: Node) => node is Element;
@@ -35,29 +35,24 @@ export interface Selector {
   tag: string;
   id?: string;
   cls?: string;
+  key?: Key;
 }
 
 export const selAttr = 'data-sel';
 
 export function parseSel(sel: string): Selector {
-  const hashIdx = sel.indexOf('#');
-  const dotIdx = sel.indexOf('.', hashIdx);
-  const hash = hashIdx > -1 ? hashIdx : sel.length;
-  const dot = dotIdx > -1 ? dotIdx : sel.length;
-  const res: Selector = {
-    tag: hashIdx > -1 ? sel.slice(0, hashIdx) : dotIdx > -1 ? sel.slice(0, dotIdx) : sel
-  };
-  if (hash < dot) {
-    res.id = sel.slice(hash + 1, dot);
-  }
-  if (dotIdx > -1) {
-    res.cls = sel.slice(dot + 1).replace(/\./g, ' ');
-  }
+  const hash = sel.indexOf('#');
+  const dot = sel.indexOf('.', hash);
+  const dollar = sel.indexOf('$', dot);
+  const res: Selector = {tag: hash > -1 ? sel.slice(0, hash) : dot > -1 ? sel.slice(0, dot) : sel};
+  if (hash > -1) res.id = sel.slice(hash + 1, dot > -1 ? dot : undefined);
+  if (dot > -1) res.cls = sel.slice(dot + 1, dollar > -1 ? dollar : undefined).replace(/\./g, ' ');
+  if (dollar > -1) res.key = sel.slice(dollar + 1);
   return res;
 }
 
-export function buildSel({tag, id, cls}: Selector): string {
-  return `${tag}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}`;
+export function buildSel({tag, id, cls, key}: Selector): string {
+  return `${tag}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}${key ? '$' + key : ''}`;
 }
 
 type VNodeQueue<VData> = VNode<VData>[];
@@ -132,7 +127,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       }
       vnode.elm = api.createComment(vnode.text as string);
     } else if (isDef(sel)) {
-      const elm = vnode.elm = api.createElement(sel,
+      const elm = vnode.elm = api.createElement(sel, vnode.key,
         isDef(data) ? (data as VData).ns : undefined);
       for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyNode as VNode<VData>, vnode);
       if (isArray(children)) {
@@ -348,14 +343,16 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   function read(node: Node): VNode<VData> {
     let text: string;
     if (api.isElement(node)) {
-      const sel = api.getSelector(node);
+      const [sel, key] = api.getSelector(node);
+      const data: VData = {} as VData;
+      if (key) data.key = key;
       const children: VNode<VData>[] = [];
       for (let child = api.firstChild(node);
         child != null;
         child = api.nextSibling(child)) {
         children.push(read(child));
       }
-      const vn = vnode(sel, {}, children, undefined, node);
+      const vn = vnode(sel, data, children, undefined, node);
       for (let i = 0; i < cbs.read.length; ++i) cbs.read[i](vn);
       return vn;
     } else if (api.isText(node)) {

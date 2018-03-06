@@ -1,3 +1,4 @@
+import {Key} from '../vnode';
 import {DOMAPI, parseSel, buildSel, selAttr} from '../snabbdom';
 
 const STR_CHARS_REGEX = /["&]/g;
@@ -73,13 +74,13 @@ export class MockElement implements ToString {
   }
 }
 
-function createElement(sel: string, nsUri?: string): MockElement {
+function createElement(sel: string, key: Key, nsUri?: string): MockElement {
   const {tag, id, cls} = parseSel(sel);
   const elm = new MockElement(tag, nsUri);
   if (id) elm.attrs.id = id;
   if (cls) elm.class = cls.split(/ /);
-  if (id || cls) { // save original selector to restore on client
-    elm.attrs[selAttr] = buildSel({tag: '', id, cls});
+  if (id || cls || key) { // save original selector to restore on client
+    elm.attrs[selAttr] = buildSel({tag: '', id, cls, key});
   }
   return elm;
 }
@@ -128,14 +129,14 @@ function nextSibling(node: MockElement): MockElement | null {
   return null;
 }
 
-function getSelector(elm: MockElement): string {
+function getSelector(elm: MockElement): [string, Key | void] {
   const tag = elm.tag.toLowerCase();
   const sel = elm.attrs[selAttr] as string | void;
   if (sel) {
-    const {id, cls} = parseSel(sel);
-    return buildSel({tag, id, cls});
+    const {id, cls, key} = parseSel(sel);
+    return [buildSel({tag, id, cls}), key];
   }
-  return tag;
+  return [tag, undefined];
 }
 
 function setTextContent(node: MockElement, text: string | null): void {

@@ -345,11 +345,11 @@ describe('snabbdom', function() {
       it('can work with domApi', function () {
         var domApi = Object.assign({}, htmlDomApi, {
           getSelector: function(elm) {
-            return snabbdom.buildSel({
+            return [snabbdom.buildSel({
               tag: 'x-' + elm.tagName.toLowerCase(),
               id: elm.id,
               cls: elm.className,
-            });
+            }), undefined];
           }
         });
         var read = snabbdom.init([], domApi).read;
