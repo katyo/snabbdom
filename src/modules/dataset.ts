@@ -20,7 +20,9 @@ export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
       keys = api.listDatas(elm),
       datas: Dataset = {};
     for (const key of keys) {
-      datas[key] = api.getData(elm, key);
+      if (key != 'sel') {
+        datas[key] = api.getData(elm, key);
+      }
     }
     (vnode.data as VDatasetData).dataset = datas;
   }
