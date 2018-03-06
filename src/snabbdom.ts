@@ -1,10 +1,10 @@
 /* global module, document, Node */
 import {Module, ModuleHooks} from './modules/module';
 import {Hooks} from './hooks';
-import {vnode, VNode, VBaseData, Key, VHooksData} from './vnode';
+import {vnode, VNode, VBaseData, VKey, VHooksData} from './vnode';
 
 export interface DOMAPI {
-  createElement: (sel: string, key?: Key, nsUri?: string) => Element;
+  createElement: (sel: string, key?: VKey, nsUri?: string) => Element;
   createTextNode: (text: string) => Text;
   createComment: (text: string) => Comment;
   insertChild: (parentNode: Node, newNode: Node, referenceNode?: Node | null) => void;
@@ -12,7 +12,7 @@ export interface DOMAPI {
   parentNode: (node: Node) => Node | null;
   firstChild: (node: Node) => Node | null;
   nextSibling: (node: Node) => Node | null;
-  getSelector: (elm: Element) => [string, Key | void];
+  getSelector: (elm: Element) => [string, VKey | void];
   setTextContent: (node: Node, text: string | null) => void;
   getTextContent: (node: Node) => string | null;
   isElement: (node: Node) => node is Element;
@@ -32,27 +32,24 @@ export function isDef<Type>(s: Type | undefined): s is Type {
 }
 
 export interface Selector {
-  tag: string;
+  tag?: string;
   id?: string;
   cls?: string;
-  key?: Key;
+  key?: VKey;
 }
 
 export const selAttr = 'data-sel';
 
+// tag?, id?, class?, num-key?, str-key?
+const selRegExp = /^([^#\.$@]+)?(?:#([^\.$@]+))?(?:\.([^$@]+))?(?:$(.+))?(?:@(.*))?$/;
+
 export function parseSel(sel: string): Selector {
-  const hash = sel.indexOf('#');
-  const dot = sel.indexOf('.', hash);
-  const dollar = sel.indexOf('$', dot);
-  const res: Selector = {tag: hash > -1 ? sel.slice(0, hash) : dot > -1 ? sel.slice(0, dot) : sel};
-  if (hash > -1) res.id = sel.slice(hash + 1, dot > -1 ? dot : undefined);
-  if (dot > -1) res.cls = sel.slice(dot + 1, dollar > -1 ? dollar : undefined).replace(/\./g, ' ');
-  if (dollar > -1) res.key = sel.slice(dollar + 1);
-  return res;
+  const [, tag, id, cls, nkey, skey] = sel.match(selRegExp) as RegExpMatchArray;
+  return {tag, id, cls: cls && cls.replace(/\./g, ' '), key: skey != null ? skey : parseFloat(nkey)};
 }
 
 export function buildSel({tag, id, cls, key}: Selector): string {
-  return `${tag}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}${key ? '$' + key : ''}`;
+  return `${tag || ''}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/ /, '.') : ''}${key !== undefined ? (typeof key == 'number' ? '$' : '@') + key : ''}`;
 }
 
 type VNodeQueue<VData> = VNode<VData>[];
@@ -63,7 +60,7 @@ function sameVnode<VData>(vnode1: VNode<VData>, vnode2: VNode<VData>): boolean {
   return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
 
-type KeyToIndexMap = {[key: string]: number};
+type KeyToIndexMap = Record<string, number>;
 
 type ArraysOf<T> = {
   [K in keyof T]: (T[K])[];
@@ -72,7 +69,7 @@ type ArraysOf<T> = {
 type ModulesHooks<VData> = ArraysOf<ModuleHooks<VData>>;
 
 function createKeyToOldIdx<VData>(children: VNode<VData>[], beginIdx: number, endIdx: number): KeyToIndexMap {
-  let i: number, map: KeyToIndexMap = {}, key: Key | undefined, ch;
+  let i: number, map: KeyToIndexMap = {}, key: VKey | undefined, ch;
   for (i = beginIdx; i <= endIdx; ++i) {
     ch = children[i];
     if (ch != null) {

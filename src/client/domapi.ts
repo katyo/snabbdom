@@ -1,4 +1,4 @@
-import {Key} from '../vnode';
+import {VKey} from '../vnode';
 import {DOMAPI, parseSel, buildSel, selAttr} from '../snabbdom';
 
 function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
@@ -25,7 +25,7 @@ function nextSibling(node: Node): Node | null {
   return node.nextSibling;
 }
 
-function getSelector(elm: Element): [string, Key | void] {
+function getSelector(elm: Element): [string, VKey | void] {
   const tag = elm.tagName.toLowerCase();
   const sel = elm.getAttribute(selAttr);
   if (sel) {
@@ -56,13 +56,15 @@ function isComment(node: Node): node is Comment {
 }
 
 export function htmlDomApi(document: Document): DOMAPI {
-  function createElement(sel: string, key?: Key, nsUri?: string): Element {
+  function createElement(sel: string, key?: VKey, nsUri?: string): Element {
     const {tag, id, cls} = parseSel(sel);
-    const elm = nsUri ? document.createElementNS(nsUri, tag) : document.createElement(tag);
+    const elm = nsUri ?
+      document.createElementNS(nsUri, tag as string) :
+      document.createElement(tag as string);
     if (id) elm.setAttribute('id', id);
     if (cls) elm.setAttribute('class', cls);
     if (id || cls || key) { // preserve original selector
-      elm.setAttribute(selAttr, buildSel({tag: '', id, cls, key}));
+      elm.setAttribute(selAttr, buildSel({id, cls, key}));
     }
     return elm;
   }

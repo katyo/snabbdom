@@ -1,9 +1,9 @@
 import {Hooks} from './hooks';
 
-export type Key = string | number;
+export type VKey = string | number;
 
 export interface VBaseData {
-  key?: Key;
+  key?: VKey;
   ns?: string; // for SVGs
 }
 
@@ -17,7 +17,7 @@ export interface VNode<VData> {
   children?: (VNode<VData> | string)[];
   elm?: Node;
   text?: string;
-  key?: Key;
+  key?: VKey;
 }
 
 export function vnode<VData>(
@@ -27,7 +27,7 @@ export function vnode<VData>(
   text: string | undefined,
   elm: Element | Text | undefined
 ): VNode<VData> {
-  let key = data === undefined ? undefined : data.key;
+  const key = data === undefined ? undefined : data.key;
   return {
     sel: sel, data: data, children: children,
     text: text, elm: elm, key: key
