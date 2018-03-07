@@ -14,24 +14,24 @@ export interface VHooksData<VData> {
 export interface VNode<VData> {
   sel?: string;
   data?: VData;
-  children?: (VNode<VData> | string)[];
+  children?: VNodes<VData>;
   elm?: Node;
   text?: string;
   key?: VKey;
 }
 
-export function vnode<VData>(
-  sel: string | undefined,
-  data: any | undefined,
-  children: (VNode<VData> | string)[] | undefined,
-  text: string | undefined,
-  elm: Element | Text | undefined
+export type VNodeChild<VData> = VNode<VData> | string | number | null | undefined;
+export type VNodes<VData> = VNodeChild<VData>[];
+
+export function vnode<VData extends VBaseData>(
+  sel?: string,
+  data?: VData,
+  children?: VNodes<VData>,
+  text?: string,
+  elm?: Node
 ): VNode<VData> {
   const key = data === undefined ? undefined : data.key;
-  return {
-    sel: sel, data: data, children: children,
-    text: text, elm: elm, key: key
-  };
+  return {sel, data, children, text, elm, key};
 }
 
 export default vnode;

@@ -375,12 +375,12 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       return vn;
     } else if (api.isText(node)) {
       text = api.getTextContent(node) as string;
-      return vnode(undefined, undefined, undefined, text, node);
+      return vnode<VData>(undefined, undefined, undefined, text, node);
     } else if (api.isComment(node)) {
       text = api.getTextContent(node) as string;
-      return vnode('!', {}, [], text, node as any);
+      return vnode<VData>('!', {} as VData, [], text, node);
     } else {
-      return vnode('', {}, [], undefined, node as any);
+      return vnode<VData>('', {} as VData, [], undefined, node);
     }
   }
 

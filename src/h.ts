@@ -1,18 +1,17 @@
-import {vnode, VNode, VBaseData} from './vnode';
+import {vnode, VNode, VNodeChild, VNodes, VBaseData} from './vnode';
 import {isArray, isPrimitive, isDef} from './snabbdom';
 
-export type VNodes<VData> = VNode<VData>[];
-export type VNodeChild<VData> = VNode<VData> | string | number | undefined | null;
-export type ArrayOrElement<T> = T | T[];
-export type VNodeChildren<VData> = ArrayOrElement<VNodeChild<VData>>;
+export type VNodeChildren<VData> = VNodeChild<VData> | VNodes<VData>;
 
-function addNS<VData extends VBaseData>(data: VData, children: VNodes<VData> | undefined, sel: string | undefined): void {
+function addNS<VData extends VBaseData>(data: VData, children?: VNodes<VData>, sel?: string): void {
   data.ns = 'http://www.w3.org/2000/svg';
   if (sel !== 'foreignObject' && isDef(children)) {
     for (let i = 0; i < children.length; ++i) {
-      let childData = children[i].data;
-      if (isDef(childData)) {
-        addNS(childData, (children[i] as VNode<VData>).children as VNodes<VData>, children[i].sel);
+      const child = children[i];
+      if (child != null && !isPrimitive(child)) {
+        if (isDef(child.data)) {
+          addNS(child.data, child.children, child.sel);
+        }
       }
     }
   }
