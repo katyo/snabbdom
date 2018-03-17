@@ -40,6 +40,9 @@
         "src/snabbdom.bundle.ts",
         "src/snabbdom.ts",
         "src/thunk.ts",
-        "src/vnode.ts"
+        "src/vnode.ts",
+        "src/client.ts",
+        "src/server.ts",
+        "src/index.ts"
     ]
 }
