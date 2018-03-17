@@ -1,6 +1,6 @@
 {
   "name": "snabbdom-ng",
-  "version": "0.7.1-ng.4",
+  "version": "0.7.1-ng.5",
   "description": "A virtual DOM library with focus on simplicity, modularity, powerful features and performance.",
   "main": "index.js",
   "module": "es/index.js",
