@@ -1,4 +1,4 @@
-import {AttrVal, AttrsAPI} from '../modules/attributes';
+import {AttrVal, AttrSome, AttrsAPI} from '../modules/attributes';
 import {MockElement} from './domapi';
 
 function listAttrs(elm: MockElement): string[] {
@@ -9,7 +9,7 @@ function getAttr(elm: MockElement, key: string): AttrVal {
   return elm.attrs[key];
 }
 
-function setAttr(elm: MockElement, key: string, val: AttrVal) {
+function setAttr(elm: MockElement, key: string, val: AttrSome) {
   elm.attrs[key] = val;
 }
 

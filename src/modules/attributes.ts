@@ -1,7 +1,9 @@
 import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type AttrVal = string | number | boolean | void;
+export type AttrSome = string | number | boolean | null;
+export type AttrNone = undefined;
+export type AttrVal = AttrSome | AttrNone;
 
 export type Attrs = Record<string, AttrVal>;
 
@@ -12,11 +14,16 @@ export interface VAttrsData {
 export interface AttrsAPI {
   listAttrs(elm: Node): string[];
   getAttr(elm: Node, key: string): AttrVal;
-  setAttr(elm: Node, key: string, val: AttrVal): void;
+  setAttr(elm: Node, key: string, val: AttrSome): void;
   removeAttr(elm: Node, key: string): void;
 }
 
 const empty: Attrs = {};
+
+function isSome(val: AttrVal): val is AttrSome {
+  return val !== undefined;
+}
+
 export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
   function readAttrs(vnode: VNode<VAttrsData>) {
     const elm = vnode.elm as Node,
@@ -45,8 +52,7 @@ export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
     // update modified attributes, add new attributes
     for (key in attrs) {
       const cur = attrs[key];
-      const old = oldAttrs[key];
-      if (old !== cur) {
+      if (isSome(cur) && oldAttrs[key] !== cur) {
         api.setAttr(elm, key, cur);
       }
     }
@@ -54,7 +60,7 @@ export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
     // use `in` operator since the previous `for` iteration uses it (.i.e. add even attributes with undefined value)
     // the other option is to remove all attributes with value == undefined
     for (key in oldAttrs) {
-      if (!(key in attrs)) {
+      if (!isSome(attrs[key])) {
         api.removeAttr(elm, key);
       }
     }

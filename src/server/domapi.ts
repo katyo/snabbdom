@@ -24,7 +24,7 @@ export function render(node: Node): string {
 export class MockElement implements ToString {
   public parent: MockElement | null = null;
   public nodes: MockElement[] = [];
-  public attrs: Record<string, string | number | boolean> = {};
+  public attrs: Record<string, string | number | boolean | null> = {};
   public class: string[] = [];
   public style: Record<string, string> = {};
   constructor(public tag: string, ns?: string, public text: string | null = null) {

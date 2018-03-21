@@ -1,10 +1,10 @@
-import {AttrVal, AttrsAPI} from '../modules/attributes';
+import {AttrVal, AttrSome, AttrsAPI} from '../modules/attributes';
 
 // because those in TypeScript are too restrictive: https://github.com/Microsoft/TSJS-lib-generator/pull/237
 declare global {
   interface Element {
-    setAttribute(name: string, value: string | number | boolean): void;
-    setAttributeNS(namespaceURI: string, qualifiedName: string, value: string | number | boolean): void;
+    setAttribute(name: string, value: string | number | boolean | null): void;
+    setAttributeNS(namespaceURI: string, qualifiedName: string, value: string | number | boolean | null): void;
   }
 }
 
@@ -25,7 +25,7 @@ function getAttr(elm: Element, key: string): AttrVal {
   return elm.getAttribute(key) as AttrVal;
 }
 
-function setAttr(elm: Element, key: string, val: AttrVal) {
+function setAttr(elm: Element, key: string, val: AttrSome) {
   if (val === true) {
     elm.setAttribute(key, "");
   } else if (val === false) {
