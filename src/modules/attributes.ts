@@ -16,6 +16,7 @@ export interface AttrsAPI {
   removeAttr(elm: Node, key: string): void;
 }
 
+const empty: Attrs = {};
 export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
   function readAttrs(vnode: VNode<VAttrsData>) {
     const elm = vnode.elm as Node,
@@ -38,8 +39,8 @@ export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
 
     if (!oldAttrs && !attrs) return;
     if (oldAttrs === attrs) return;
-    oldAttrs = oldAttrs || {};
-    attrs = attrs || {};
+    oldAttrs = oldAttrs || empty;
+    attrs = attrs || empty;
 
     // update modified attributes, add new attributes
     for (key in attrs) {

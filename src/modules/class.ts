@@ -12,6 +12,8 @@ export interface ClassAPI {
   removeClass(elm: Node, name: string): void;
 }
 
+const empty: Classes = {};
+
 export function classModule(api: ClassAPI): Module<VClassData> {
   function updateClass(oldVnode: VNode<VClassData>, vnode: VNode<VClassData>): void {
     const elm = vnode.elm as Node;
@@ -21,8 +23,8 @@ export function classModule(api: ClassAPI): Module<VClassData> {
 
     if (!oldClass && !newClass) return;
     if (oldClass === newClass) return;
-    oldClass = oldClass || {};
-    newClass = newClass || {};
+    oldClass = oldClass || empty;
+    newClass = newClass || empty;
 
     for (name in oldClass) {
       if (!newClass[name]) {

@@ -15,6 +15,8 @@ export interface PropsAPI {
   removeProp(elm: Node, key: string): void;
 }
 
+const empty: Props = {};
+
 export function propsModule(api: PropsAPI): Module<VPropsData> {
   function updateProps(oldVnode: VNode<VPropsData>, vnode: VNode<VPropsData>): void {
     const elm = vnode.elm as Node;
@@ -24,8 +26,8 @@ export function propsModule(api: PropsAPI): Module<VPropsData> {
 
     if (!oldProps && !props) return;
     if (oldProps === props) return;
-    oldProps = oldProps || {};
-    props = props || {};
+    oldProps = oldProps || empty;
+    props = props || empty;
 
     for (key in oldProps) {
       if (!props[key]) {

@@ -20,6 +20,8 @@ export interface StyleAPI {
   onTransEnd(elm: Node, names: string[], callback: () => void): void;
 }
 
+const empty: Styles = {};
+
 export function styleModule(api: StyleAPI): Module<VStyleData> {
   function readStyle(vnode: VNode<VStyleData>) {
     const elm = vnode.elm as Node;
@@ -39,8 +41,8 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
 
     if (!oldStyle && !style) return;
     if (oldStyle === style) return;
-    oldStyle = oldStyle || {};
-    style = style || {};
+    oldStyle = oldStyle || empty;
+    style = style || empty;
 
     const oldHasDel = 'delayed' in oldStyle;
 

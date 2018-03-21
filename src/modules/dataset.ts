@@ -14,6 +14,8 @@ export interface DatasetAPI {
   removeData(node: Node, name: string): void;
 }
 
+const empty: Dataset = {};
+
 export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
   function readDataset(vnode: VNode<VDatasetData>) {
     const elm = vnode.elm as Node,
@@ -35,8 +37,8 @@ export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
 
     if (!oldDataset && !dataset) return;
     if (oldDataset === dataset) return;
-    oldDataset = oldDataset || {};
-    dataset = dataset || {};
+    oldDataset = oldDataset || empty;
+    dataset = dataset || empty;
 
     for (key in oldDataset) {
       if (!dataset[key]) {
