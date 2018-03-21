@@ -1,13 +1,13 @@
 import {VNode} from '../vnode';
 import {Module} from './module';
 
-export type Attrs = Record<string, string | number | boolean>;
+export type AttrVal = string | number | boolean | void;
+
+export type Attrs = Record<string, AttrVal>;
 
 export interface VAttrsData {
   attrs?: Attrs;
 }
-
-export type AttrVal = string | number | boolean;
 
 export interface AttrsAPI {
   listAttrs(elm: Node): string[];
