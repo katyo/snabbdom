@@ -1,4 +1,4 @@
-import {VNode} from '../vnode';
+import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from './module';
 import {isDef} from '../snabbdom';
 
@@ -15,8 +15,6 @@ export interface PropsAPI {
   setProp(elm: Node, key: string, val: PropVal): void;
   removeProp(elm: Node, key: string): void;
 }
-
-const empty: Props = {};
 
 export function propsModule(api: PropsAPI): Module<VPropsData> {
   function updateProps(oldVnode: VNode<VPropsData>, vnode: VNode<VPropsData>): void {

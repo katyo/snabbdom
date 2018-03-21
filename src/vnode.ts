@@ -21,7 +21,10 @@ export interface VNode<VData> {
 }
 
 export type VNodeChild<VData> = VNode<VData> | string | number | null | undefined;
+
 export type VNodes<VData> = VNodeChild<VData>[];
+
+export type VNodeQueue<VData> = VNode<VData>[];
 
 export function vnode<VData extends VBaseData>(
   sel?: string,
@@ -33,5 +36,8 @@ export function vnode<VData extends VBaseData>(
   const key = data === undefined ? undefined : data.key;
   return {sel, data, children, text, elm, key};
 }
+
+export const emptyVData = {};
+export const emptyVNode = vnode('', emptyVData, [], undefined, undefined);
 
 export default vnode;

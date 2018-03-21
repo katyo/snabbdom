@@ -1,4 +1,4 @@
-import {VNode} from '../vnode';
+import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from './module';
 
 export type Dataset = Record<string, string>;
@@ -13,8 +13,6 @@ export interface DatasetAPI {
   setData(node: Node, name: string, val: string): void;
   removeData(node: Node, name: string): void;
 }
-
-const empty: Dataset = {};
 
 export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
   function readDataset(vnode: VNode<VDatasetData>) {

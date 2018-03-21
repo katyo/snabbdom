@@ -1,7 +1,7 @@
 /* global module, document, Node */
 import {Module, ModuleHooks} from './modules/module';
 import {Hooks} from './hooks';
-import {vnode, VNode, VBaseData, VKey, VHooksData} from './vnode';
+import {vnode, VNode, VNodeQueue, VBaseData, VKey, VHooksData, emptyVNode} from './vnode';
 
 export interface DOMAPI {
   createElement: (sel: string, key?: VKey, nsUri?: string) => Element;
@@ -73,10 +73,6 @@ export function buildKey({id, cls, key}: KeyInfo): string {
 
 export const selAttr = 'data-sel';
 
-type VNodeQueue<VData> = VNode<VData>[];
-
-const emptyNode = vnode('', {}, [], undefined, undefined);
-
 function sameVnode<VData>(vnode1: VNode<VData>, vnode2: VNode<VData>): boolean {
   return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
@@ -147,7 +143,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     } else if (isDef(sel)) {
       const elm = vnode.elm = api.createElement(sel, vnode.key,
         isDef(data) ? (data as VData).ns : undefined);
-      for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyNode as VNode<VData>, vnode);
+      for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyVNode as VNode<VData>, vnode);
       if (isArray(children)) {
         for (i = 0; i < children.length; ++i) {
           const ch = children[i];
@@ -160,7 +156,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       }
       i = (vnode.data as VData).hook; // Reuse variable
       if (isDef(i)) {
-        if (i.create) i.create(emptyNode, vnode);
+        if (i.create) i.create(emptyVNode, vnode);
         if (i.insert) insertedVnodeQueue.push(vnode);
       }
     } else {

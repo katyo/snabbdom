@@ -1,4 +1,4 @@
-import {VNode} from '../vnode';
+import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from './module';
 
 export type AttrSome = string | number | boolean | null;
@@ -17,8 +17,6 @@ export interface AttrsAPI {
   setAttr(elm: Node, key: string, val: AttrSome): void;
   removeAttr(elm: Node, key: string): void;
 }
-
-const empty: Attrs = {};
 
 function isSome(val: AttrVal): val is AttrSome {
   return val !== undefined;

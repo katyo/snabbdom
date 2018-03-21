@@ -1,4 +1,4 @@
-import {VNode} from '../vnode';
+import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from './module';
 
 export type Styles = Record<string, string>;
@@ -19,8 +19,6 @@ export interface StyleAPI {
   removeStyle(elm: Node, name: string): void;
   onTransEnd(elm: Node, names: string[], callback: () => void): void;
 }
-
-const empty: Styles = {};
 
 export function styleModule(api: StyleAPI): Module<VStyleData> {
   function readStyle(vnode: VNode<VStyleData>) {
