@@ -1,5 +1,6 @@
 import {VNode} from '../vnode';
 import {Module} from './module';
+import {isDef} from '../snabbdom';
 
 export type Props = Record<string, any>;
 
@@ -20,7 +21,7 @@ const empty: Props = {};
 export function propsModule(api: PropsAPI): Module<VPropsData> {
   function updateProps(oldVnode: VNode<VPropsData>, vnode: VNode<VPropsData>): void {
     const elm = vnode.elm as Node;
-    let key: string, cur: any, old: any,
+    let key: string, cur: any,
       oldProps = (oldVnode.data as VPropsData).props,
       props = (vnode.data as VPropsData).props;
 
@@ -30,14 +31,15 @@ export function propsModule(api: PropsAPI): Module<VPropsData> {
     props = props || empty;
 
     for (key in oldProps) {
-      if (!props[key]) {
+      if (isDef(oldProps[key]) && !isDef(props[key])) {
         api.removeProp(elm, key);
       }
     }
+
     for (key in props) {
       cur = props[key];
-      old = oldProps[key];
-      if (old !== cur && (key !== 'value' || api.getProp(elm, key) !== cur)) {
+      if (isDef(cur) && oldProps[key] !== cur &&
+        (key !== 'value' || api.getProp(elm, key) !== cur)) {
         api.setProp(elm, key, cur);
       }
     }
