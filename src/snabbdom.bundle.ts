@@ -15,7 +15,7 @@ import {styleApi} from './client/style';
 import {eventListenersApi} from './client/eventlisteners';
 import {datasetApi} from './client/dataset';
 import {h} from './h'; // helper function for creating vnodes
-export interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VPropsData, VStyleData, VEventData, VDatasetData {}
+export interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VPropsData, VStyleData, VEventData<VData>, VDatasetData {}
 export const snabbdomModules: Module<VData>[] = [
   attributesModule(attributesApi),
   classModule(classApi),
