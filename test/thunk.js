@@ -17,7 +17,7 @@ describe('thunk', function() {
     function numberInSpan(n) {
       return h('span', 'Number is ' + n);
     }
-    var vnode = thunk('span', 'num', numberInSpan, [22]);
+    var vnode = thunk('span', 'num', numberInSpan, 22);
     assert.deepEqual(vnode.sel, 'span');
     assert.deepEqual(vnode.data.key, 'num');
     assert.deepEqual(vnode.data.args, [22]);
@@ -29,10 +29,10 @@ describe('thunk', function() {
       return h('span', {key: 'num'}, 'Number is ' + n);
     }
     var vnode1 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode2 = h('div', [
-      thunk('span', 'num', numberInSpan, [2])
+      thunk('span', 'num', numberInSpan, 2)
     ]);
     patch(vnode0, vnode1);
     assert.equal(called, 1);
@@ -46,10 +46,10 @@ describe('thunk', function() {
       return h('span', {key: 'num'}, 'Number is ' + n);
     }
     var vnode1 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode2 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     patch(vnode0, vnode1);
     assert.equal(called, 1);
@@ -63,10 +63,10 @@ describe('thunk', function() {
       return h('span', {key: 'num'}, 'Number is ' + n);
     }
     var vnode1 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode2 = h('div', [
-      thunk('span', 'num', numberInSpan, [1, 2])
+      thunk('span', 'num', numberInSpan, 1, 2)
     ]);
     patch(vnode0, vnode1);
     assert.equal(called, 1);
@@ -84,10 +84,10 @@ describe('thunk', function() {
       return h('span', {key: 'num'}, 'Number really is ' + n);
     }
     var vnode1 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode2 = h('div', [
-      thunk('span', 'num', numberInSpan2, [1])
+      thunk('span', 'num', numberInSpan2, 1)
     ]);
     patch(vnode0, vnode1);
     assert.equal(called, 1);
@@ -101,13 +101,13 @@ describe('thunk', function() {
       return h('span', {key: 'num'}, 'Number is ' + n);
     }
     var vnode1 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode2 = h('div', [
-      thunk('span', 'num', numberInSpan, [1])
+      thunk('span', 'num', numberInSpan, 1)
     ]);
     var vnode3 = h('div', [
-      thunk('span', 'num', numberInSpan, [2])
+      thunk('span', 'num', numberInSpan, 2)
     ]);
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.firstChild.tagName.toLowerCase(), 'span');
@@ -124,7 +124,7 @@ describe('thunk', function() {
     function vnodeFn(s) {
       return h('span.number', 'Hello ' + s);
     }
-    var vnode1 = thunk('span.number', vnodeFn, ['World!']);
+    var vnode1 = thunk('span.number', vnodeFn, 'World!');
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.innerText, 'Hello World!');
   });
@@ -134,9 +134,9 @@ describe('thunk', function() {
       called++;
       return h('span', {key: 'num'}, 'Number is ' + n);
     }
-    var vnode1 = thunk('span', 'num', numberInSpan, [1]);
-    var vnode2 = thunk('span', 'num', numberInSpan, [1]);
-    var vnode3 = thunk('span', 'num', numberInSpan, [2]);
+    var vnode1 = thunk('span', 'num', numberInSpan, 1);
+    var vnode2 = thunk('span', 'num', numberInSpan, 1);
+    var vnode3 = thunk('span', 'num', numberInSpan, 2);
 
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.tagName.toLowerCase(), 'span');
@@ -159,8 +159,8 @@ describe('thunk', function() {
       var prefix = (n % 2) === 0 ? 'Even' : 'Odd';
       return h('div', {key: oddEven}, prefix + ': ' + n);
     }
-    var vnode1 = h('div', [thunk('span', 'num', numberInSpan, [1])]);
-    var vnode2 = h('div', [thunk('div', 'oddEven', oddEven, [4])]);
+    var vnode1 = h('div', [thunk('span', 'num', numberInSpan, 1)]);
+    var vnode2 = h('div', [thunk('div', 'oddEven', oddEven, 4)]);
 
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.firstChild.tagName.toLowerCase(), 'span');
@@ -178,8 +178,8 @@ describe('thunk', function() {
       var prefix = (n % 2) === 0 ? 'Even' : 'Odd';
       return h('div', {key: oddEven}, prefix + ': ' + n);
     }
-    var vnode1 = thunk('span', 'num', numberInSpan, [1]);
-    var vnode2 = thunk('div', 'oddEven', oddEven, [4]);
+    var vnode1 = thunk('span', 'num', numberInSpan, 1);
+    var vnode2 = thunk('div', 'oddEven', oddEven, 4);
 
     elm = patch(vnode0, vnode1).elm;
     assert.equal(elm.tagName.toLowerCase(), 'span');
@@ -199,7 +199,7 @@ describe('thunk', function() {
     }
     var vnode1 = h('div', [
       h('div', 'Foo'),
-      thunk('span', 'num', numberInSpan, [1]),
+      thunk('span', 'num', numberInSpan, 1),
       h('div', 'Foo')
     ]);
     var vnode2 = h('div', [
@@ -220,7 +220,7 @@ describe('thunk', function() {
     }
     var vnode1 = h('div', [
       h('div', 'Foo'),
-      thunk('span', 'num', numberInSpan, [1]),
+      thunk('span', 'num', numberInSpan, 1),
       h('div', 'Foo')
     ]);
     var vnode2 = h('div', [

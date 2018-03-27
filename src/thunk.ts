@@ -1,7 +1,7 @@
 import {VNode, VKey, VBaseData, VHooksData, vnode} from './vnode';
 import {Hooks} from './hooks';
 
-export interface ThunkFn<VData extends VThunkData<VData>> {
+export interface ThunkFn<VData> {
   (...args: any[]): VNode<VData>;
 }
 
@@ -11,8 +11,26 @@ export interface VThunkData<VData extends VThunkData<VData>> {
 }
 
 export interface Thunk<VData extends VThunkData<VData>> {
-  (sel: string, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
-  (sel: string, key: VKey, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
+  // non-keyed
+  <A1>(sel: string, fn: (arg1: A1) => VNode<VData>, a1: A1): VNode<VData>;
+  <A1, A2>(sel: string, fn: (a1: A1, a2: A2) => VNode<VData>, a1: A1, a2: A2): VNode<VData>;
+  <A1, A2, A3>(sel: string, fn: (a1: A1, a2: A2, a3: A3) => VNode<VData>, a1: A1, a2: A2, a3: A3): VNode<VData>;
+  <A1, A2, A3, A4>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4): VNode<VData>;
+  <A1, A2, A3, A4, A5>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7, A8>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7, A8, A9>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9): VNode<VData>;
+  // keyed
+  <A1>(sel: string, key: VKey, fn: (arg1: A1) => VNode<VData>, a1: A1): VNode<VData>;
+  <A1, A2>(sel: string, key: VKey, fn: (a1: A1, a2: A2) => VNode<VData>, a1: A1, a2: A2): VNode<VData>;
+  <A1, A2, A3>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3) => VNode<VData>, a1: A1, a2: A2, a3: A3): VNode<VData>;
+  <A1, A2, A3, A4>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4): VNode<VData>;
+  <A1, A2, A3, A4, A5>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7, A8>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8): VNode<VData>;
+  <A1, A2, A3, A4, A5, A6, A7, A8, A9>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9): VNode<VData>;
 }
 
 function copyToThunk<VData extends VThunkData<VData>>(vnode: VNode<VData>, thunk: VNode<VData>): void {
@@ -59,11 +77,30 @@ function prepatch<VData extends VThunkData<VData>>(oldVnode: VNode<VData>, thunk
   copyToThunk(oldVnode, thunk);
 }
 
-export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
-export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, key: VKey, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
-export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, key: VKey | ThunkFn<VData> | undefined, fn: ThunkFn<VData> | any[], args?: any[]): VNode<VData> {
-  if (args === undefined) {
-    args = fn as any[];
+// non-keyed
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1>(sel: string, fn: (a1: A1) => VNode<VData>, a1: A1): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2>(sel: string, fn: (a1: A1, a2: A2) => VNode<VData>, a1: A1, a2: A2): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3>(sel: string, fn: (a1: A1, a2: A2, a3: A3) => VNode<VData>, a1: A1, a2: A2, a3: A3): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7, A8>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7, A8, A9>(sel: string, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9): VNode<VData>;
+// keyed
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1>(sel: string, key: VKey, fn: (a1: A1) => VNode<VData>, a1: A1): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2>(sel: string, key: VKey, fn: (a1: A1, a2: A2) => VNode<VData>, a1: A1, a2: A2): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3) => VNode<VData>, a1: A1, a2: A2, a3: A3): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7, A8>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>, A1, A2, A3, A4, A5, A6, A7, A8, A9>(sel: string, key: VKey, fn: (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => VNode<VData>, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9): VNode<VData>;
+
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, key: VKey | ThunkFn<VData> | undefined, fn: ThunkFn<VData> | any[], ...args: any[]): VNode<VData> {
+  if (typeof key == 'function') {
+    args.unshift(fn);
     fn = key as ThunkFn<VData>;
     key = undefined;
   }
