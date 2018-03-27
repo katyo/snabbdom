@@ -6,8 +6,8 @@ export interface ThunkFn<VData> {
 }
 
 export interface VThunkData<VData extends VThunkData<VData>> {
-  fn: ThunkFn<VData>;
-  args: any[];
+  fn?: ThunkFn<VData>;
+  args?: any[];
 }
 
 export interface Thunk<VData extends VThunkData<VData>> {
@@ -48,15 +48,15 @@ function copyToThunk<VData extends VThunkData<VData>>(vnode: VNode<VData>, thunk
 
 function init<VData extends VThunkData<VData>>(thunk: VNode<VData>): void {
   const cur = thunk.data as VData;
-  copyToThunk(cur.fn.apply(undefined, cur.args), thunk);
+  copyToThunk((cur.fn as ThunkFn<VData>).apply(undefined, cur.args), thunk);
 }
 
 function prepatch<VData extends VThunkData<VData>>(oldVnode: VNode<VData>, thunk: VNode<VData>): void {
   const old = oldVnode.data as VData;
   const cur = thunk.data as VData;
 
-  const oldArgs = old.args;
-  const args = cur.args;
+  const oldArgs = old.args as any[];
+  const args = cur.args as any[];
 
   let needRender = false;
 
@@ -71,7 +71,7 @@ function prepatch<VData extends VThunkData<VData>>(oldVnode: VNode<VData>, thunk
   }
 
   if (needRender) {
-    oldVnode = cur.fn.apply(undefined, args);
+    oldVnode = (cur.fn as ThunkFn<VData>).apply(undefined, args);
   }
 
   copyToThunk(oldVnode, thunk);
