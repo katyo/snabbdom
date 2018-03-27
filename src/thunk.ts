@@ -1,60 +1,74 @@
-import {VNode} from './vnode';
-import {h} from './h';
+import {VNode, VKey, VBaseData, VHooksData, vnode} from './vnode';
+import {Hooks} from './hooks';
 
-export interface VThunkData {
-  fn: () => VNode<VThunkData>;
+export interface ThunkFn<VData extends VThunkData<VData>> {
+  (...args: any[]): VNode<VData>;
+}
+
+export interface VThunkData<VData extends VThunkData<VData>> {
+  fn: ThunkFn<VData>;
   args: any[];
 }
 
-export interface ThunkFn {
-  (sel: string, fn: Function, args: any[]): VNode<VThunkData>;
-  (sel: string, key: any, fn: Function, args: any[]): VNode<VThunkData>;
+export interface Thunk<VData extends VThunkData<VData>> {
+  (sel: string, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
+  (sel: string, key: VKey, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
 }
 
-function copyToThunk(vnode: VNode<VThunkData>, thunk: VNode<VThunkData>): void {
-  thunk.elm = vnode.elm;
-  (vnode.data as VThunkData).fn = (thunk.data as VThunkData).fn;
-  (vnode.data as VThunkData).args = (thunk.data as VThunkData).args;
+function copyToThunk<VData extends VThunkData<VData>>(vnode: VNode<VData>, thunk: VNode<VData>): void {
+  const old = vnode.data as VData;
+  const cur = thunk.data as VData;
+
+  old.fn = cur.fn;
+  old.args = cur.args;
+
   thunk.data = vnode.data;
   thunk.children = vnode.children;
   thunk.text = vnode.text;
   thunk.elm = vnode.elm;
 }
 
-function init(thunk: VNode<VThunkData>): void {
-  const cur = thunk.data as VThunkData;
-  const vnode = (cur.fn as any).apply(undefined, cur.args);
-  copyToThunk(vnode, thunk);
+function init<VData extends VThunkData<VData>>(thunk: VNode<VData>): void {
+  const cur = thunk.data as VData;
+  copyToThunk(cur.fn.apply(undefined, cur.args), thunk);
 }
 
-function prepatch(oldVnode: VNode<VThunkData>, thunk: VNode<VThunkData>): void {
-  let i: number, old = oldVnode.data as VThunkData, cur = thunk.data as VThunkData;
-  const oldArgs = old.args, args = cur.args;
-  if (old.fn !== cur.fn || (oldArgs as any).length !== (args as any).length) {
-    copyToThunk((cur.fn as any).apply(undefined, args), thunk);
-    return;
-  }
-  for (i = 0; i < (args as any).length; ++i) {
-    if ((oldArgs as any)[i] !== (args as any)[i]) {
-      copyToThunk((cur.fn as any).apply(undefined, args), thunk);
-      return;
+function prepatch<VData extends VThunkData<VData>>(oldVnode: VNode<VData>, thunk: VNode<VData>): void {
+  const old = oldVnode.data as VData;
+  const cur = thunk.data as VData;
+
+  const oldArgs = old.args;
+  const args = cur.args;
+
+  let needRender = false;
+
+  if (old.fn !== cur.fn || oldArgs.length !== args.length) {
+    needRender = true;
+  } else {
+    for (let i = 0; i < args.length; ++i) {
+      if (oldArgs[i] !== args[i]) {
+        needRender = true;
+      }
     }
   }
+
+  if (needRender) {
+    oldVnode = cur.fn.apply(undefined, args);
+  }
+
   copyToThunk(oldVnode, thunk);
 }
 
-export const thunk = function thunk(sel: string, key?: any, fn?: any, args?: any): VNode<VThunkData> {
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, key: VKey, fn: ThunkFn<VData>, args: any[]): VNode<VData>;
+export function thunk<VData extends VBaseData & VHooksData<VData> & VThunkData<VData>>(sel: string, key: VKey | ThunkFn<VData> | undefined, fn: ThunkFn<VData> | any[], args?: any[]): VNode<VData> {
   if (args === undefined) {
-    args = fn;
-    fn = key;
+    args = fn as any[];
+    fn = key as ThunkFn<VData>;
     key = undefined;
   }
-  return h(sel, {
-    key: key,
-    hook: {init: init, prepatch: prepatch},
-    fn: fn,
-    args: args
-  });
-} as ThunkFn;
+
+  return vnode<VData>(sel, {key, hook: {init, prepatch} as Hooks<VData>, fn, args} as VData);
+};
 
 export default thunk;
