@@ -22,14 +22,13 @@ function isSome(val: AttrVal): val is AttrSome {
   return val !== undefined;
 }
 
-export function attributesModule(api: AttrsAPI): Module<VAttrsData> {
+export function attributesModule(api: AttrsAPI, ignore: RegExp = /^(?:(?:id|class|style)$|data\-)/): Module<VAttrsData> {
   function readAttrs(vnode: VNode<VAttrsData>) {
     const elm = vnode.elm as Node,
       keys = api.listAttrs(elm),
       attrs: Attrs = {};
     for (const key of keys) {
-      if (key != 'id' && key != 'class' &&
-        !(key.length > 5 && key[4] == '-' && key[0] == 'd' && key[1] == 'a' && key[2] == 't' && key[3] == 'a')) {
+      if (!ignore.test(key)) {
         attrs[key] = api.getAttr(elm, key);
       }
     }
