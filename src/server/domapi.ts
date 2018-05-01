@@ -62,9 +62,9 @@ export class MockElement implements ToString {
   strStyle() {
     const style: string[] = [];
     for (const key in this.style) {
-      style.push(`${key}:${this.attrs[key]}`);
+      style.push(`${key}:${this.style[key]}`);
     }
-    return style.length ? ` style="${escapeStr(style.join(';'))} "` : '';
+    return style.length ? ` style="${escapeStr(style.join(';'))}"` : '';
   }
   strText() {
     return this.text ? escapeHtml(this.text) : '';

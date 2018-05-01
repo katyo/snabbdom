@@ -8,14 +8,15 @@ function nextFrame(fn: () => void) {
 }
 
 function listStyle(elm: HTMLElement): string[] {
-  const style = elm.style;
-  const keys: string[] = [];
-  for (const key in style) {
-    if (style.hasOwnProperty(key)) {
-      keys.push(key);
+  const style = elm.getAttribute('style');
+  const names: string[] = [];
+  if (style) {
+    for (const pair of style.split(/\s*;\s*/)) {
+      const m = pair.match(/^[^:\s]+/);
+      if (m) names.push(m[0]);
     }
   }
-  return keys;
+  return names;
 }
 
 function getStyle(elm: HTMLElement, name: string): string {
