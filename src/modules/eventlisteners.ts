@@ -1,5 +1,5 @@
 import {VNode} from '../vnode';
-import {Module} from './module';
+import {Module} from '../module';
 
 export interface VEventListener<Event, VData> {
   (event: Event, vnode: VNode<VData>): void;

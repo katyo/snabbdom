@@ -1,5 +1,5 @@
 import {VNode, emptyVData as empty} from '../vnode';
-import {Module} from './module';
+import {Module} from '../module';
 
 export type AttrSome = string | number | boolean | null;
 export type AttrNone = undefined;

@@ -1,6 +1,6 @@
 /* global module, document, Node */
-import {Module, ModuleHooks} from './modules/module';
 import {Hooks} from './hooks';
+import {Module, ModulesHooks, moduleHooks} from './module';
 import {vnode, VNode, VNodeQueue, VBaseData, VKey, VHooksData, emptyVNode} from './vnode';
 
 export interface DOMAPI {
@@ -79,12 +79,6 @@ function sameVnode<VData>(vnode1: VNode<VData>, vnode2: VNode<VData>): boolean {
 
 type KeyToIndexMap = Record<string, number>;
 
-type ArraysOf<T> = {
-  [K in keyof T]: (T[K])[];
-}
-
-type ModulesHooks<VData> = ArraysOf<ModuleHooks<VData>>;
-
 function createKeyToOldIdx<VData>(children: VNode<VData>[], beginIdx: number, endIdx: number): KeyToIndexMap {
   let i: number, map: KeyToIndexMap = {}, key: VKey | undefined, ch;
   for (i = beginIdx; i <= endIdx; ++i) {
@@ -97,8 +91,6 @@ function createKeyToOldIdx<VData>(children: VNode<VData>[], beginIdx: number, en
   return map;
 }
 
-const hooks: (keyof Module<void>)[] = ['read', 'create', 'update', 'remove', 'destroy', 'pre', 'post'];
-
 export interface VDOMAPI<VData> {
   read(node: Node): VNode<VData>;
   patch(oldVNode: VNode<VData>, newVNode: VNode<VData>): VNode<VData>;
@@ -107,12 +99,13 @@ export interface VDOMAPI<VData> {
 export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], api: DOMAPI): VDOMAPI<VData> {
   let i: number, j: number, cbs = {} as ModulesHooks<VData>;
 
-  for (i = 0; i < hooks.length; ++i) {
-    cbs[hooks[i]] = [];
+  for (i = 0; i < moduleHooks.length; ++i) {
+    const name = moduleHooks[i];
+    cbs[name] = [];
     for (j = 0; j < modules.length; ++j) {
-      const hook = modules[j][hooks[i]];
+      const hook = modules[j][name];
       if (isDef(hook)) {
-        (cbs[hooks[i]] as any[]).push(hook);
+        (cbs[name] as any[]).push(hook);
       }
     }
   }

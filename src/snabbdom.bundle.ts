@@ -1,6 +1,6 @@
 import {VNode, VBaseData, VHooksData} from './vnode';
+import {Module, ModuleHooks} from './module';
 import {init} from './snabbdom';
-import {Module, ModuleHooks} from './modules/module';
 import {attributesModule, VAttrsData} from './modules/attributes'; // for setting attributes on DOM elements
 import {classModule, VClassData} from './modules/class'; // makes it easy to toggle classes
 import {propsModule, VPropsData} from './modules/props'; // for setting properties on DOM elements
