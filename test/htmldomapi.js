@@ -3,8 +3,8 @@ var assert = require('assert');
 var snabbdom = require('../snabbdom');
 var h = require('../h').default;
 var vdom = snabbdom.init([
-  require('../modules/attributes').default(require('../client/attributes').default)
-], htmlDomApi);
+  require('../modules/attributes').default()
+], document);
 var read = vdom.read;
 var patch = vdom.patch;
 
@@ -24,7 +24,7 @@ describe('svg', function () {
     h('g')
    ]);
    var result = patch(patch(vnode0, a), b).elm;
-   assert.equal(result.childNodes.length, 1); 
+   assert.equal(result.childNodes.length, 1);
  });
 
  it('adds correctly xlink namespaced attribute', function(){
@@ -38,7 +38,7 @@ describe('svg', function () {
 
    var result = patch(vnode0, a).elm;
    assert.equal(result.childNodes.length, 1);
-   assert.equal(result.childNodes[0].getAttribute('xlink:href'), testUrl); 
+   assert.equal(result.childNodes[0].getAttribute('xlink:href'), testUrl);
    assert.equal(result.childNodes[0].getAttributeNS(xlinkNS,'href'), testUrl);
 
  });
@@ -50,6 +50,6 @@ describe('svg', function () {
 
    var result = patch(vnode0, a).elm;
    assert.equal(result.getAttributeNS(xmlNS, 'lang'), testAttrValue);
-   assert.equal(result.getAttribute('xml:lang'), testAttrValue); 
+   assert.equal(result.getAttribute('xml:lang'), testAttrValue);
  });
 })

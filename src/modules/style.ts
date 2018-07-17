@@ -12,27 +12,81 @@ export interface VStyleData {
   style?: StylesData;
 }
 
-export interface StyleAPI {
-  listStyle(elm: Node): string[];
-  getStyle(elm: Node, name: string): string;
-  setStyle(elm: Node, name: string, val: string, next?: boolean): void;
-  removeStyle(elm: Node, name: string): void;
-  onTransEnd(elm: Node, names: string[], callback: () => void): void;
-}
+export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
+  // api
 
-export function styleModule(api: StyleAPI): Module<VStyleData> {
+  function nextFrame(fn: () => void) {
+    raf(() => {
+      raf(fn);
+    });
+  }
+
+  function listStyle(elm: HTMLElement): string[] {
+    const style = elm.getAttribute('style');
+    const names: string[] = [];
+    if (style) {
+      for (const pair of style.split(/\s*;\s*/)) {
+        const m = pair.match(/^[^:\s]+/);
+        if (m) names.push(m[0]);
+      }
+    }
+    return names;
+  }
+
+  function getStyle(elm: HTMLElement, name: string): string {
+    return (elm.style as any)[name];
+  }
+
+  function setStyle(elm: HTMLElement, name: string, val: string, next: boolean = false) {
+    const fn = name[0] === '-' && name[1] === '-' ?
+      () => {
+        elm.style.setProperty(name, val);
+      } : () => {
+        (elm.style as any)[name] = val;
+      };
+
+    if (!next) {
+      fn();
+    } else {
+      nextFrame(fn);
+    }
+  }
+
+  function removeStyle(elm: HTMLElement, name: string) {
+    if (name[0] == '-' && name[1] == '-') {
+      elm.style.removeProperty(name);
+    } else {
+      (elm.style as any)[name] = '';
+    }
+  }
+
+  function onTransEnd(elm: HTMLElement, names: string[], callback: () => void) {
+    const compStyle: CSSStyleDeclaration = getComputedStyle(elm as Element);
+    const props = (compStyle as any)['transition-property'].split(', ');
+    let amount = 0;
+    for (let i = 0; i < props.length; ++i) {
+      if (names.indexOf(props[i]) !== -1) amount++;
+    }
+    (elm as Element).addEventListener('transitionend', (ev: TransitionEvent) => {
+      if (ev.target === elm)--amount;
+      if (amount === 0) callback();
+    });
+  }
+
+  // module
+
   function readStyle(vnode: VNode<VStyleData>) {
-    const elm = vnode.elm as Node;
-    const keys = api.listStyle(elm);
+    const elm = vnode.elm as HTMLElement;
+    const keys = listStyle(elm);
     const style: StylesData = {};
     for (const key of keys) {
-      style[key] = api.getStyle(elm, key);
+      style[key] = getStyle(elm, key);
     }
     (vnode.data as VStyleData).style = style;
   }
 
   function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>) {
-    const elm = vnode.elm as Node;
+    const elm = vnode.elm as HTMLElement;
     let cur: any, name: string,
       {style: oldStyle} = oldVnode.data as VStyleData,
       {style} = vnode.data as VStyleData;
@@ -46,7 +100,7 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
 
     for (name in oldStyle) {
       if (!style[name]) {
-        api.removeStyle(elm, name);
+        removeStyle(elm, name);
       }
     }
 
@@ -56,22 +110,22 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
         for (let name2 in style.delayed) {
           cur = style.delayed[name2];
           if (!oldHasDel || cur !== (oldStyle.delayed as any)[name2]) {
-            api.setStyle(elm, name2, cur, true);
+            setStyle(elm, name2, cur, true);
           }
         }
       } else if (name !== 'remove' && cur !== oldStyle[name]) {
-        api.setStyle(elm, name, cur);
+        setStyle(elm, name, cur);
       }
     }
   }
 
   function applyDestroyStyle(vnode: VNode<VStyleData>) {
-    const elm = vnode.elm as Node,
+    const elm = vnode.elm as HTMLElement,
       {style: s} = vnode.data as VStyleData;
     let style: any, name: string;
     if (!s || !(style = s.destroy)) return;
     for (name in style) {
-      api.setStyle(elm, name, style[name]);
+      setStyle(elm, name, style[name]);
     }
   }
 
@@ -81,15 +135,15 @@ export function styleModule(api: StyleAPI): Module<VStyleData> {
       rm();
       return;
     }
-    const elm = vnode.elm as Node,
+    const elm = vnode.elm as HTMLElement,
       style = s.remove,
       applied: string[] = [];
     let name: string;
     for (name in style) {
       applied.push(name);
-      api.setStyle(elm, name, style[name]);
+      setStyle(elm, name, style[name]);
     }
-    api.onTransEnd(elm, applied, rm);
+    onTransEnd(elm, applied, rm);
   }
 
   return {

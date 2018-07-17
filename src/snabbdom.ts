@@ -3,28 +3,11 @@ import {Hooks} from './hooks';
 import {Module, ModulesHooks, moduleHooks} from './module';
 import {vnode, VNode, VNodeQueue, VBaseData, VKey, VHooksData, emptyVNode} from './vnode';
 
-export interface DOMAPI {
-  createElement: (sel: string, key?: VKey, nsUri?: string) => Element;
-  createTextNode: (text: string) => Text;
-  createComment: (text: string) => Comment;
-  insertChild: (parentNode: Node, newNode: Node, referenceNode?: Node | null) => void;
-  removeChild: (node: Node, child: Node) => void;
-  parentNode: (node: Node) => Node | null;
-  firstChild: (node: Node) => Node | null;
-  nextSibling: (node: Node) => Node | null;
-  getSelector: (elm: Element) => [string, VKey | void];
-  setTextContent: (node: Node, text: string | null) => void;
-  getTextContent: (node: Node) => string | null;
-  isElement: (node: Node) => node is Element;
-  isText: (node: Node) => node is Text;
-  isComment: (node: Node) => node is Comment;
-}
-
 export const {isArray} = Array;
 
 export function isPrimitive(s: any): s is (string | number | boolean) {
-  const t = (typeof s)[0];
-  return t == 's' || t == 'n' || t == 'b';
+  const t = typeof s;
+  return t == 'string' || t == 'number' || t == 'boolean';
 }
 
 export function isDef<Type>(s: Type | undefined): s is Type {
@@ -91,12 +74,20 @@ function createKeyToOldIdx<VData>(children: VNode<VData>[], beginIdx: number, en
   return map;
 }
 
-export interface VDOMAPI<VData> {
-  read(node: Node): VNode<VData>;
-  patch(oldVNode: VNode<VData>, newVNode: VNode<VData>): VNode<VData>;
+export interface Read<VData> {
+  (node: Node): VNode<VData>;
 }
 
-export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], api: DOMAPI): VDOMAPI<VData> {
+export interface Patch<VData> {
+  (oldVNode: VNode<VData>, newVNode: VNode<VData>): VNode<VData>;
+}
+
+export interface VDOMAPI<VData> {
+  read: Read<VData>;
+  patch: Patch<VData>;
+}
+
+export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], document: Document): VDOMAPI<VData> {
   let i: number, j: number, cbs = {} as ModulesHooks<VData>;
 
   for (i = 0; i < moduleHooks.length; ++i) {
@@ -113,8 +104,8 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   function createRmCb(childElm: Node, listeners: number) {
     return function rmCb() {
       if (--listeners === 0) {
-        const parent = api.parentNode(childElm) as Node;
-        api.removeChild(parent, childElm);
+        const parent = parentNode(childElm) as Node;
+        removeChild(parent, childElm);
       }
     };
   }
@@ -132,20 +123,20 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       if (!isDef(vnode.text)) {
         vnode.text = '';
       }
-      vnode.elm = api.createComment(vnode.text as string);
+      vnode.elm = createComment(vnode.text as string);
     } else if (isDef(sel)) {
-      const elm = vnode.elm = api.createElement(sel, vnode.key,
+      const elm = vnode.elm = createElement(sel, vnode.key,
         isDef(data) ? (data as VData).ns : undefined);
       for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyVNode as VNode<VData>, vnode);
       if (isArray(children)) {
         for (i = 0; i < children.length; ++i) {
           const ch = children[i];
           if (ch != null) {
-            api.insertChild(elm, createElm(ch as VNode<VData>, insertedVnodeQueue));
+            insertChild(elm, createElm(ch as VNode<VData>, insertedVnodeQueue));
           }
         }
       } else if (isPrimitive(vnode.text)) {
-        api.insertChild(elm, api.createTextNode(vnode.text));
+        insertChild(elm, createTextNode(vnode.text));
       }
       i = (vnode.data as VData).hook; // Reuse variable
       if (isDef(i)) {
@@ -153,7 +144,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         if (i.insert) insertedVnodeQueue.push(vnode);
       }
     } else {
-      vnode.elm = api.createTextNode(vnode.text as string);
+      vnode.elm = createTextNode(vnode.text as string);
     }
     return vnode.elm;
   }
@@ -169,7 +160,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx];
       if (ch != null) {
-        api.insertChild(parentElm, createElm(ch, insertedVnodeQueue), before);
+        insertChild(parentElm, createElm(ch, insertedVnodeQueue), before);
       }
     }
   }
@@ -208,7 +199,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
             rm();
           }
         } else { // Text node
-          api.removeChild(parentElm, ch.elm as Node);
+          removeChild(parentElm, ch.elm as Node);
         }
       }
     }
@@ -249,12 +240,12 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         newEndVnode = newCh[--newEndIdx];
       } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
-        api.insertChild(parentElm, oldStartVnode.elm as Node, api.nextSibling(oldEndVnode.elm as Node));
+        insertChild(parentElm, oldStartVnode.elm as Node, nextSibling(oldEndVnode.elm as Node));
         oldStartVnode = oldCh[++oldStartIdx];
         newEndVnode = newCh[--newEndIdx];
       } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue);
-        api.insertChild(parentElm, oldEndVnode.elm as Node, oldStartVnode.elm as Node);
+        insertChild(parentElm, oldEndVnode.elm as Node, oldStartVnode.elm as Node);
         oldEndVnode = oldCh[--oldEndIdx];
         newStartVnode = newCh[++newStartIdx];
       } else {
@@ -263,16 +254,16 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         }
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
         if (!isDef(idxInOld)) { // New element
-          api.insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
+          insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           newStartVnode = newCh[++newStartIdx];
         } else {
           elmToMove = oldCh[idxInOld];
           if (elmToMove.sel !== newStartVnode.sel) {
-            api.insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
+            insertChild(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           } else {
             patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
             oldCh[idxInOld] = undefined as any;
-            api.insertChild(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node);
+            insertChild(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node);
           }
           newStartVnode = newCh[++newStartIdx];
         }
@@ -306,15 +297,15 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh as VNode<VData>[], ch as VNode<VData>[], insertedVnodeQueue);
       } else if (isDef(ch)) {
-        if (isDef(oldVnode.text)) api.setTextContent(elm, '');
+        if (isDef(oldVnode.text)) setTextContent(elm, '');
         addVnodes(elm, null, ch as VNode<VData>[], 0, (ch as VNode<VData>[]).length - 1, insertedVnodeQueue);
       } else if (isDef(oldCh)) {
         removeVnodes(elm, oldCh as VNode<VData>[], 0, (oldCh as VNode<VData>[]).length - 1);
       } else if (isDef(oldVnode.text)) {
-        api.setTextContent(elm, '');
+        setTextContent(elm, '');
       }
     } else if (oldVnode.text !== vnode.text) {
-      api.setTextContent(elm, vnode.text as string);
+      setTextContent(elm, vnode.text as string);
     }
     if (isDef(hook) && isDef(i = hook.postpatch)) {
       i(oldVnode, vnode);
@@ -330,12 +321,12 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       patchVnode(oldVnode, vnode, insertedVnodeQueue);
     } else {
       const elm = oldVnode.elm as Node;
-      const parent = api.parentNode(elm);
+      const parent = parentNode(elm);
 
       createElm(vnode, insertedVnodeQueue);
 
       if (parent !== null) {
-        api.insertChild(parent, vnode.elm as Node, api.nextSibling(elm));
+        insertChild(parent, vnode.elm as Node, nextSibling(elm));
         removeVnodes(parent, [oldVnode], 0, 0);
       }
     }
@@ -349,24 +340,24 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
 
   function read(node: Node): VNode<VData> {
     let text: string;
-    if (api.isElement(node)) {
-      const [sel, key] = api.getSelector(node);
+    if (isElement(node)) {
+      const [sel, key] = getSelector(node);
       const data: VData = {} as VData;
       if (key) data.key = key;
       const children: VNode<VData>[] = [];
-      for (let child = api.firstChild(node);
+      for (let child = firstChild(node);
         child != null;
-        child = api.nextSibling(child)) {
+        child = nextSibling(child)) {
         children.push(read(child));
       }
       const vn = vnode(sel, data, children, undefined, node);
       for (let i = 0; i < cbs.read.length; ++i) cbs.read[i](vn);
       return vn;
-    } else if (api.isText(node)) {
-      text = api.getTextContent(node) as string;
+    } else if (isText(node)) {
+      text = getTextContent(node) as string;
       return vnode<VData>(undefined, undefined, undefined, text, node);
-    } else if (api.isComment(node)) {
-      text = api.getTextContent(node) as string;
+    } else if (isComment(node)) {
+      text = getTextContent(node) as string;
       return vnode<VData>('!', {} as VData, [], text, node);
     } else {
       return vnode<VData>('', {} as VData, [], undefined, node);
@@ -374,4 +365,87 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   }
 
   return {read, patch};
+
+  function createElement(sel: string, key?: VKey, nsUri?: string): Element {
+    const {tag, id, cls} = parseSel(sel);
+    const elm = nsUri ?
+      document.createElementNS(nsUri, tag as string) :
+      document.createElement(tag as string);
+    if (id) elm.setAttribute('id', id);
+    if (cls) elm.setAttribute('class', cls.join(' '));
+    if (id || cls || isDef(key)) { // preserve original selector
+      elm.setAttribute(selAttr, buildKey({
+        id: id ? true : undefined,
+        cls: cls ? cls.length : undefined,
+        key
+      }));
+    }
+    return elm;
+  }
+
+  function createTextNode(text: string): Text {
+    return document.createTextNode(text);
+  }
+
+  function createComment(text: string): Comment {
+    return document.createComment(text);
+  }
+}
+
+function insertChild(parentNode: Node, newNode: Node, referenceNode?: Node | null): void {
+  if (referenceNode) {
+    parentNode.insertBefore(newNode, referenceNode);
+  } else {
+    parentNode.appendChild(newNode);
+  }
+}
+
+function removeChild(node: Node, child: Node): void {
+  node.removeChild(child);
+}
+
+function parentNode(node: Node): Node | null {
+  return node.parentNode;
+}
+
+function firstChild(node: Node): Node | null {
+  return node.firstChild;
+}
+
+function nextSibling(node: Node): Node | null {
+  return node.nextSibling;
+}
+
+function getSelector(elm: Element): [string, VKey | void] {
+  const tag = elm.tagName.toLowerCase();
+  const sel = elm.getAttribute(selAttr);
+  if (sel) {
+    const {id, cls, key} = parseKey(sel);
+    return [buildSel({
+      tag,
+      id: id && elm.getAttribute('id') || undefined,
+      cls: cls && (elm.getAttribute('class') || '').split(/ /).slice(0, cls) || undefined
+    }), key];
+  }
+  return [tag, undefined];
+}
+
+function setTextContent(node: Node, text: string | null): void {
+  node.textContent = text;
+}
+
+function getTextContent(node: Node): string | null {
+  return node.textContent;
+}
+
+function isElement(node: Node): node is Element {
+  return node.nodeType === 1;
+}
+
+function isText(node: Node): node is Text {
+  return node.nodeType === 3;
+}
+
+function isComment(node: Node): node is Comment {
+  return node.nodeType === 8;
 }

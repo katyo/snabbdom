@@ -3,10 +3,10 @@ var shuffle = require('knuth-shuffle').knuthShuffle;
 
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
-  require('../modules/class').default(require('../client/class').default),
-  require('../modules/props').default(require('../client/props').default),
-  require('../modules/eventlisteners').default(require('../client/eventlisteners').default),
-], htmlDomApi);
+  require('../modules/class').default(document),
+  require('../modules/props').default(),
+  require('../modules/eventlisteners').default(document),
+], document);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;
@@ -341,32 +341,6 @@ describe('snabbdom', function() {
         assert.strictEqual(elm.childNodes.length, 1);
         assert.strictEqual(elm.childNodes[0].nodeType, 1);
         assert.strictEqual(elm.childNodes[0].textContent, 'Hello');
-      });
-      it('can work with domApi', function () {
-        var domApi = Object.assign({}, htmlDomApi, {
-          getSelector: function(elm) {
-            return [snabbdom.buildSel({
-              tag: 'x-' + elm.tagName.toLowerCase(),
-              id: elm.id,
-              cls: elm.className ? elm.className.split(/ /) : undefined,
-            }), undefined];
-          }
-        });
-        var read = snabbdom.init([], domApi).read;
-        var h2 = document.createElement('h2');
-        h2.id = 'hx';
-        h2.setAttribute('data-env', "xyz");
-        var text = document.createTextNode("Foobar");
-        var elm = document.createElement('div');
-        elm.id = 'id';
-        elm.className = 'class other';
-        elm.setAttribute('data', 'value');
-        elm.appendChild(h2);
-        elm.appendChild(text);
-        var vnode = read(elm);
-        assert.equal(vnode.sel, 'x-div#id.class.other');
-        assert.equal(vnode.children[0].sel, 'x-h2#hx');
-        assert.equal(vnode.children[1].text, 'Foobar');
       });
     });
     describe('updating children with keys', function() {
@@ -949,7 +923,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {remove: function(_, rm) { rm1 = rm; }},
           {remove: function(_, rm) { rm2 = rm; }},
-        ], htmlDomApi).patch;
+        ], document).patch;
         var vnode1 = h('div', [h('a', {hook: {remove: function(_, rm) { rm3 = rm; }}})]);
         var vnode2 = h('div', []);
         elm = patch(vnode0, vnode1).elm;
@@ -991,7 +965,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {pre: function() { result.push('pre'); }},
           {post: function() { result.push('post'); }},
-        ], htmlDomApi).patch;
+        ], document).patch;
         var vnode1 = h('div');
         patch(vnode0, vnode1);
         assert.deepEqual(result, ['pre', 'post']);
@@ -1025,7 +999,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {destroy: function() { destroyed++; }},
-        ], htmlDomApi).patch;
+        ], document).patch;
         var vnode1 = h('div', [
           h('span', 'First sibling'),
           h('div', [
@@ -1045,7 +1019,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {remove: function() { removed++; }},
-        ], htmlDomApi).patch;
+        ], document).patch;
         var vnode1 = h('div', [
           h('span', 'First child'),
           '',
@@ -1063,7 +1037,7 @@ describe('snabbdom', function() {
         var patch = snabbdom.init([
           {create: function() { created++; }},
           {destroy: function() { destroyed++; }},
-        ], htmlDomApi).patch;
+        ], document).patch;
         var vnode1 = h('div', [
           h('span', 'First sibling'),
           h('div', [
@@ -1105,20 +1079,21 @@ describe('snabbdom', function() {
       assert.equal(result.length, 0);
     });
   });
+  
   describe('html rendering', function() {
-    var render = require('../server/domapi').render;
-    var domApi = require('../server/domapi').default;
-    var vdom = snabbdom.init([], domApi);
-    
+    var renderer = require('../html');
+    var render = renderer.init([]);
+
     it('can render single node', function() {
-      var elm = domApi.createElement('p');
-      vdom.patch(vdom.read(elm), h('p', 'Hello world'));
-      assert.equal(render(elm), '<p>Hello world</p>');
+      var str = renderer.stringWriter();
+      var elm = h('p', 'Hello world');
+      render(elm, str);
+      assert.equal(str.str, '<p>Hello world</p>');
     });
 
     it('can render multiple nodes', function() {
-      var elm = domApi.createElement('div');
-      var vnode = h('div', [
+      var str = renderer.stringWriter();
+      var elm = h('div', [
         h('h2', 'Heading'),
         '\n',
         h('p', [
@@ -1127,14 +1102,15 @@ describe('snabbdom', function() {
         ]),
         ' ',
       ]);
-      vdom.patch(vdom.read(elm), vnode);
-      assert.equal(render(elm), '<div><h2>Heading</h2>\n<p>Hello <span>there</span></p> </div>');
+      render(elm, str);
+      assert.equal(str.str, '<div><h2>Heading</h2>\n<p>Hello <span>there</span></p> </div>');
     });
-    
+
     it('can escape text content', function() {
-      var elm = domApi.createElement('p');
-      vdom.patch(vdom.read(elm), h('p', '<\'Hello\'&"world">'));
-      assert.equal(render(elm), "<p>&lt;'Hello'&amp;\"world\"&gt;</p>");
+      var str = renderer.stringWriter();
+      var elm = h('p', '<\'Hello\'&"world">');
+      render(elm, str);
+      assert.equal(str.str, "<p>&lt;'Hello'&amp;\"world\"&gt;</p>");
     });
   });
 });

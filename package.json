@@ -1,6 +1,6 @@
 {
   "name": "snabbdom-ng",
-  "version": "0.7.1-ng.10",
+  "version": "0.7.1-ng.11",
   "description": "A virtual DOM library with focus on simplicity, modularity, powerful features and performance.",
   "main": "index.js",
   "module": "es/index.js",
@@ -33,6 +33,9 @@
     "compile": "npm run compile-es && npm run compile-commonjs",
     "compile-es": "tsc --outDir es --module es6 --moduleResolution node",
     "compile-commonjs": "tsc --outDir ./",
+    "clean": "npm run clean-es && npm run clean-commonjs",
+    "clean-es": "rm -rf es",
+    "clean-commonjs": "rm -rf modules helpers html *.d.ts *.map hooks.js module.js vnode.js h.js thunk.js index.js html.js snabbdom.js snabbdom.bundle.js",
     "prepublish": "npm run compile",
     "bundle": "gulp compress",
     "release-major": "xyz --repo git@github.com:paldepind/snabbdom.git --increment major",

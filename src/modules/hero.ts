@@ -1,7 +1,9 @@
 import {VNode} from '../vnode';
 import {Module} from '../module';
 
-export type Hero = {id: string};
+export interface Hero {
+  id: string;
+}
 
 export interface VHeroData {
   hero?: Hero;

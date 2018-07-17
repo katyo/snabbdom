@@ -7,21 +7,55 @@ export interface VDatasetData {
   dataset?: Dataset;
 }
 
-export interface DatasetAPI {
-  listDatas(elm: Node): string[];
-  getData(elm: Node, key: string): string;
-  setData(node: Node, name: string, val: string): void;
-  removeData(node: Node, name: string): void;
+const CAPS_REGEX = /[A-Z]/g;
+
+function toKey(key: string): string {
+  return key.replace(CAPS_REGEX, '-$&').toLowerCase();
 }
 
-export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
+type Api = [
+  /*listDatas*/(elm: HTMLElement) => string[],
+  /*getData*/(elm: HTMLElement, key: string) => string,
+  /*setData*/(elm: HTMLElement, key: string, val: string) => void,
+  /*removeData*/(elm: HTMLElement, key: string) => void
+];
+
+export function datasetModule(document: Document): Module<VDatasetData> {
+  // api
+
+  const [
+    listDatas, getData, setData, removeData
+  ]: Api = document.createElement('p').dataset ? [
+    (elm: HTMLElement) => Object.keys(elm.dataset),
+    (elm: HTMLElement, key: string) => elm.dataset[key] as string, // because we gets only existing datas
+    (elm: HTMLElement, key: string, val: string) => {elm.dataset[key] = val},
+    (elm: HTMLElement, key: string) => {delete elm.dataset[key];}
+  ] : [
+        (elm: HTMLElement) => {
+          const keys: string[] = [];
+          const {attributes} = elm;
+          for (let i = 0, n = attributes.length; i < n; i++) {
+            const key = attributes[i].nodeName;
+            if (key.length > 5 && key[4] == '-' && key[0] == 'd' && key[1] == 'a' && key[2] == 't' && key[3] == 'a') {
+              keys.push(key.slice(5));
+            }
+          }
+          return keys;
+        },
+        (elm: HTMLElement, key: string) => elm.getAttribute(`data-${key}`) as string, // because we gets only existing datas
+        (elm: HTMLElement, key: string, val: string) => {elm.setAttribute(`data-${toKey(key)}`, val);},
+        (elm: HTMLElement, key: string) => {elm.removeAttribute(`data-${toKey(key)}`);}
+      ];
+
+  // module
+
   function readDataset(vnode: VNode<VDatasetData>) {
-    const elm = vnode.elm as Node,
-      keys = api.listDatas(elm),
+    const elm = vnode.elm as HTMLElement,
+      keys = listDatas(elm),
       datas: Dataset = {};
     for (const key of keys) {
       if (key != 'sel') {
-        datas[key] = api.getData(elm, key);
+        datas[key] = getData(elm, key);
       }
     }
     (vnode.data as VDatasetData).dataset = datas;
@@ -40,18 +74,22 @@ export function datasetModule(api: DatasetAPI): Module<VDatasetData> {
 
     for (key in oldDataset) {
       if (!dataset[key]) {
-        api.removeData(elm, key);
+        removeData(elm, key);
       }
     }
 
     for (key in dataset) {
       if (oldDataset[key] !== dataset[key]) {
-        api.setData(elm, key, dataset[key]);
+        setData(elm, key, dataset[key]);
       }
     }
   }
 
-  return {read: readDataset, create: updateDataset, update: updateDataset};
+  return {
+    read: readDataset,
+    create: updateDataset,
+    update: updateDataset
+  };
 }
 
 export default datasetModule;

@@ -37,5 +37,4 @@ node_modules
 /modules
 /helpers
 /es
-/client
-/server
+/html

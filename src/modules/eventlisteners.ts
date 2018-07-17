@@ -13,11 +13,6 @@ export interface VEventData<VData> {
   on?: On<VData>;
 }
 
-export interface EventAPI {
-  addEvent(elm: Node, ev: string, fn: (event: Event) => void): void;
-  removeEvent(elm: Node, ev: string, fn: (event: Event) => void): void;
-}
-
 function invokeHandler<VData>(handler: any, vnode?: VNode<VEventData<VData>>, event?: Event): void {
   if (typeof handler === "function") {
     // call function handler
@@ -59,13 +54,57 @@ function createListener() {
   }
 }
 
-export function eventListenersModule<VData>(api: EventAPI): Module<VEventData<VData>> {
+declare global {
+  // Add IE-specific interfaces to Window
+  interface Element {
+    attachEvent(event: string, listener: EventListener): boolean;
+    detachEvent(event: string, listener: EventListener): void;
+  }
+  interface Document {
+    attachEvent(event: string, listener: EventListener): boolean;
+    detachEvent(event: string, listener: EventListener): void;
+  }
+}
+
+type Api = [
+  /*addEvent*/(elm: Element, name: string, fn: (event: Event) => void) => void,
+  /*removeEvent*/(elm: Element, name: string, fn: (event: Event) => void) => void
+];
+
+export function eventListenersModule<VData>(document: Document): Module<VEventData<VData>> {
+  // api
+
+  const [addEvent, removeEvent]: Api = document.addEventListener ? [
+    (elm: Element, name: string, fn: (event: Event) => void) => {
+      elm.addEventListener(name, fn, false);
+    },
+    (elm: Element, name: string, fn: (event: Event) => void) => {
+      elm.removeEventListener(name, fn, false);
+    }
+  ] : document.attachEvent ? [
+    (elm: Element, name: string, fn: (event: Event) => void) => {
+      elm.attachEvent(`on${name}`, fn);
+    },
+    (elm: Element, name: string, fn: (event: Event) => void) => {
+      elm.detachEvent(`on${name}`, fn);
+    }
+  ] : [
+        (elm: Element, name: string, fn: (event: Event) => void) => {
+          (elm as any)[`on${name}`] = fn;
+        },
+        (elm: Element, name: string, fn: (event: Event) => void) => {
+          delete (elm as any)[`on${name}`];
+        }
+      ];
+
+  // module
+
   function updateEventListeners(oldVnode: VNode<VEventData<VData>>, vnode?: VNode<VEventData<VData>>): void {
     const {on: oldOn} = oldVnode.data as VEventData<VData>,
       oldListener = (oldVnode as any).listener,
-      oldElm = oldVnode.elm as Node,
+      oldElm = oldVnode.elm as Element,
       on = vnode && (vnode.data as VEventData<VData>).on,
-      elm = (vnode && vnode.elm) as Node;
+      elm = (vnode && vnode.elm) as Element;
     let name: string;
 
     // optimization for reused immutable handlers
@@ -79,13 +118,13 @@ export function eventListenersModule<VData>(api: EventAPI): Module<VEventData<VD
       if (!on) {
         for (name in oldOn) {
           // remove listener if element was changed or existing listeners removed
-          api.removeEvent(oldElm, name, oldListener);
+          removeEvent(oldElm, name, oldListener);
         }
       } else {
         for (name in oldOn) {
           // remove listener if existing listener removed
           if (!on[name]) {
-            api.removeEvent(oldElm, name, oldListener);
+            removeEvent(oldElm, name, oldListener);
           }
         }
       }
@@ -102,13 +141,13 @@ export function eventListenersModule<VData>(api: EventAPI): Module<VEventData<VD
       if (!oldOn) {
         for (name in on) {
           // add listener if element was changed or new listeners added
-          api.addEvent(elm, name, listener);
+          addEvent(elm, name, listener);
         }
       } else {
         for (name in on) {
           // add listener if new listener added
           if (!oldOn[name]) {
-            api.addEvent(elm, name, listener);
+            addEvent(elm, name, listener);
           }
         }
       }

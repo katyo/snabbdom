@@ -16,7 +16,7 @@ export interface PropsAPI {
   removeProp(elm: Node, key: string): void;
 }
 
-export function propsModule(api: PropsAPI): Module<VPropsData> {
+export function propsModule(): Module<VPropsData> {
   function updateProps(oldVnode: VNode<VPropsData>, vnode: VNode<VPropsData>): void {
     const elm = vnode.elm as Node;
     let key: string, cur: any,
@@ -30,20 +30,32 @@ export function propsModule(api: PropsAPI): Module<VPropsData> {
 
     for (key in oldProps) {
       if (isDef(oldProps[key]) && !isDef(props[key])) {
-        api.removeProp(elm, key);
+        removeProp(elm, key);
       }
     }
 
     for (key in props) {
       cur = props[key];
       if (isDef(cur) && oldProps[key] !== cur &&
-        (key !== 'value' || api.getProp(elm, key) !== cur)) {
-        api.setProp(elm, key, cur);
+        (key !== 'value' || getProp(elm, key) !== cur)) {
+        setProp(elm, key, cur);
       }
     }
   }
 
   return {create: updateProps, update: updateProps};
+}
+
+function getProp(elm: Node, key: string) {
+  return (elm as any)[key];
+}
+
+function setProp(elm: Node, key: string, val: PropVal) {
+  (elm as any)[key] = val;
+}
+
+function removeProp(elm: Node, key: string) {
+  delete (elm as any)[key];
 }
 
 export default propsModule;

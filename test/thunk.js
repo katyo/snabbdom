@@ -1,7 +1,7 @@
 var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
-var vdom = snabbdom.init([], htmlDomApi);
+var vdom = snabbdom.init([], document);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;

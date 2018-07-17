@@ -2,8 +2,8 @@ var assert = require('assert');
 
 var snabbdom = require('../snabbdom');
 var vdom = snabbdom.init([
-  require('../modules/attributes').default(require('../client/attributes').default),
-], htmlDomApi);
+  require('../modules/attributes').default(),
+], document);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('../h').default;
@@ -96,28 +96,30 @@ describe('attributes', function() {
       assert.strictEqual(elm.hasAttribute('constructor'), false);
     });
   });
+  
   describe('html rendering', function() {
-    var render = require('../server/domapi').render;
-    var domApi = require('../server/domapi').default;
-    var vdom = snabbdom.init([
-      require('../modules/attributes').default(require('../server/attributes').default)
-    ], domApi);
+    var renderer = require('../html');
+    var render = renderer.init([
+      require('../html/modules/attributes').default
+    ]);
     
     it('can render single attribute', function() {
-      var elm = domApi.createElement('div');
-      vdom.patch(vdom.read(elm), h('div', [
+      var str = renderer.stringWriter();
+      var elm = h('div', [
         h('a', {attrs:{href:'http://example.com/#snippets'}}, 'Snippets')
-      ]));
-      assert.equal(render(elm), '<div><a href="http://example.com/#snippets">Snippets</a></div>');
+      ]);
+      render(elm, str);
+      assert.equal(str.str, '<div><a href="http://example.com/#snippets">Snippets</a></div>');
     });
 
     it('can render multiple attributes', function() {
-      var elm = domApi.createElement('div');
-      vdom.patch(vdom.read(elm), h('div', {attrs:{role:'navigation'}}, [
+      var str = renderer.stringWriter();
+      var elm = h('div', {attrs:{role:'navigation'}}, [
         h('a', {attrs:{id:'menu-item-snippets', href:'http://example.com/#snippets'}}, 'Snippets'),
         h('a', {attrs:{id:'menu-item-about', href:'http://example.com/about'}}, 'About us')
-      ]));
-      assert.equal(render(elm),
+      ]);
+      render(elm, str);
+      assert.equal(str.str,
                    '<div role="navigation">' +
                    '<a id="menu-item-snippets" href="http://example.com/#snippets">Snippets</a>' +
                    '<a id="menu-item-about" href="http://example.com/about">About us</a>' +
@@ -125,11 +127,12 @@ describe('attributes', function() {
     });
 
     it('can escape attribute values', function() {
-      var elm = domApi.createElement('div');
-      vdom.patch(vdom.read(elm), h('div', [
+      var str = renderer.stringWriter();
+      var elm = h('div', [
         h('a', {attrs:{href:'http://example.com/#"snippets"\''}}, 'Snippets')
-      ]));
-      assert.equal(render(elm), "<div><a href=\"http://example.com/#&#34;snippets&#34;'\">Snippets</a></div>");
+      ]);
+      render(elm, str);
+      assert.equal(str.str, "<div><a href=\"http://example.com/#&#34;snippets&#34;'\">Snippets</a></div>");
     });
   });
 });
