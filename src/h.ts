@@ -29,7 +29,7 @@ export function h<VData extends VBaseData>(sel: string, data: VData): VNode<VDat
 export function h<VData extends VBaseData>(sel: string, children: VNodeChildren<VData>): VNode<VData>;
 export function h<VData extends VBaseData>(sel: string, data: VData, children: VNodeChildren<VData>): VNode<VData>;
 export function h<VData extends VBaseData>(sel: string, b?: VData | VNodeChildren<VData>, c?: VNodeChildren<VData>): VNode<VData> {
-  let data: VData | undefined, children: VNodeChildren<VData> | undefined, text: string | undefined, i: number;
+  let data: VData | undefined, children: VNodeChild<VData>[] | undefined, text: string | undefined, i: number;
 
   if (isDef(c)) {
     data = b as VData;
@@ -57,7 +57,7 @@ export function h<VData extends VBaseData>(sel: string, b?: VData | VNodeChildre
     data = {} as VData;
   }
 
-  if (isArray(children)) {
+  if (isDef(children)) {
     for (i = 0; i < children.length; ++i) {
       if (isPrimitive(children[i])) children[i] =
         vnode<VData>(undefined, undefined, undefined, children[i] as string, undefined);
