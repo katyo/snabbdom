@@ -7,7 +7,8 @@ export const styleModule: Module<VStyleData> = {
     if (style) {
       const props: string[] = [];
       for (const key in style) {
-        props.push(`${key}:${this.style[key]}`);
+        const val = style[key];
+        if (val) props.push(`${key}:${val}`);
       }
       if (props.length) {
         setAttr('style', props.join(';'));

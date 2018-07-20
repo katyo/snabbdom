@@ -7,7 +7,7 @@ export const attributesModule: Module<VAttrsData> = {
     if (attrs) {
       for (const key in attrs) {
         const v = attrs[key], t = typeof v;
-        if (t != 'boolean' || v) {
+        if (v != null && v !== false) {
           setAttr(key, t != 'boolean' ? (t == 'string' ? v as string : `${v}`) : '');
         }
       }
