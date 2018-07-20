@@ -1,6 +1,6 @@
 {
   "name": "snabbdom-ng",
-  "version": "0.7.1-ng.11",
+  "version": "0.7.1-ng.12",
   "description": "A virtual DOM library with focus on simplicity, modularity, powerful features and performance.",
   "main": "index.js",
   "module": "es/index.js",
@@ -11,18 +11,18 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "benchmark": "^2.1.4",
-    "browserify": "^16.1.0",
-    "fake-raf": "1.0.1",
-    "gulp": "^3.9.1",
-    "gulp-clean": "^0.4.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-uglify": "^3.0.0",
-    "knuth-shuffle": "^1.0.1",
-    "testem": "^2.0.0",
-    "typescript": "^2.6.2",
-    "xyz": "3.0.0"
+    "benchmark": "^2",
+    "browserify": "^16",
+    "fake-raf": "^1",
+    "gulp": "^3",
+    "gulp-clean": "^0",
+    "gulp-rename": "^1",
+    "gulp-sourcemaps": "^2",
+    "gulp-uglify": "^3",
+    "knuth-shuffle": "^1",
+    "testem": "^2",
+    "typescript": "^2",
+    "xyz": "^3"
   },
   "scripts": {
     "pretest": "npm run compile",
