@@ -7,7 +7,7 @@ export interface VEventListener<Event, VData> {
 
 export type On<VData> =
   {[Name in keyof HTMLElementEventMap]?: VEventListener<HTMLElementEventMap[Name], VData>}
-  & {[event: string]: VEventListener<Event, VData>};
+  & {[event: string]: VEventListener<Event, VData> | undefined};
 
 export interface VEventData<VData> {
   on?: On<VData>;
