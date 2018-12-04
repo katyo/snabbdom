@@ -1,6 +1,6 @@
 {
   "name": "snabbdom-ng",
-  "version": "0.7.1-ng.12",
+  "version": "0.7.1-ng.13",
   "description": "A virtual DOM library with focus on simplicity, modularity, powerful features and performance.",
   "main": "index.js",
   "module": "es/index.js",
@@ -21,7 +21,7 @@
     "gulp-uglify": "^3",
     "knuth-shuffle": "^1",
     "testem": "^2",
-    "typescript": "^2",
+    "typescript": "^3",
     "xyz": "^3"
   },
   "scripts": {
