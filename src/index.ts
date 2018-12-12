@@ -8,6 +8,7 @@ export * from './modules/props';
 export * from './modules/style';
 export * from './modules/eventlisteners';
 export * from './modules/dataset';
+export * from './modules/references';
 export * from './helpers/attachto';
 export * from './thunk';
 export * from './h';

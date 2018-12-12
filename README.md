@@ -555,6 +555,26 @@ const value = input_ref.vnode.elm.value;
 const context = canvas_ref.vnode.elm.getContext('2d');
 ```
 
+As alternative you can get multiple references using single object:
+
+```javascript
+// references to vnodes
+const refs = {};
+
+const vnode = h('div', [
+    h('input', { ref: [refs, 'input'], attrs: {type: 'text'} }),
+    h('canvas', { ref: [refs, 'canvas'] })
+]);
+
+patch(oldVnode, vnode);
+
+// get input value
+const value = refs.input.elm.value;
+
+// get access to canvas
+const context = refs.canvas.elm.getContext('2d');
+```
+
 ## Helpers
 
 ### SVG

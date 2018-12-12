@@ -1,10 +1,13 @@
-import {VNode} from '../vnode';
+import {VNode, VKey} from '../vnode';
 import {Module} from '../module';
+import {isArray} from '../snabbdom';
 
-export type VNodeRef<VData> = { vnode?: VNode<VData> };
+export type VNodeRef<VData, Tag extends VKey = 'vnode'> = { [T in Tag]?: VNode<VData> };
+
+export type VNodeRefTagged<VData, Tag extends VKey = 'vnode'> = [VNodeRef<VData, Tag>, Tag];
 
 export interface VReferenceData<VData> {
-  ref?: VNodeRef<VData>;
+  ref?: VNodeRef<VData> | VNodeRefTagged<VData, VKey>;
 }
 
 export function referencesModule<VData>(): Module<VReferenceData<VData>> {
@@ -16,12 +19,20 @@ export function referencesModule<VData>(): Module<VReferenceData<VData>> {
 
     if (oldRef) {
       // remove old reference to help gc collect old vnode
-      oldRef.vnode = undefined;
+      if (isArray(oldRef)) {
+        oldRef[0][oldRef[1]] = undefined;
+      } else {
+        oldRef.vnode = undefined;
+      }
     }
     
     if (ref) {
       // set new reference to current vnode
-      ref.vnode = vnode;
+      if (isArray(ref)) {
+        ref[0][ref[1]] = vnode;
+      } else {
+        ref.vnode = vnode;
+      }
     }
   }
 
