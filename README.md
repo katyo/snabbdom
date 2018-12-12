@@ -81,6 +81,7 @@ var vdom = snabbdom.init([ // Init patch function with chosen modules
   require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
   require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
   require('snabbdom/modules/eventlisteners').default(eventApi), // attaches event listeners
+  require('snabbdom/modules/references').default(), // back references to vnodes
 ], htmlDomApi(document));
 var read = vdom.read;
 var patch = vdom.patch;
@@ -524,6 +525,34 @@ h('div', [
   h('input', {props: {type: 'radio', name: 'test', value: '2'},
               on: {change: sharedHandler}})
 ]);
+```
+
+### References module
+
+Sometimes you would like access to DOM nodes from something else than event listeners.
+For example, when you need access to canvas to drawing shapes or to input/textarea values.
+
+This module allows to get references to virtual nodes in easy way by passing empty objects as `ref` values:
+
+```javascript
+// reference to input vnode
+const input_ref = {};
+
+// reference to canvas vnode
+const canvas_ref = {};
+
+const vnode = h('div', [
+    h('input', { ref: input_ref, attrs: {type: 'text'} }),
+    h('canvas', { ref: canvas_ref })
+]);
+
+patch(oldVnode, vnode);
+
+// get input value
+const value = input_ref.vnode.elm.value;
+
+// get access to canvas
+const context = canvas_ref.vnode.elm.getContext('2d');
 ```
 
 ## Helpers

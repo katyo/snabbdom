@@ -7,8 +7,9 @@ import {propsModule, VPropsData} from './modules/props'; // for setting properti
 import {styleModule, VStyleData} from './modules/style'; // handles styling on elements with support for animations
 import {eventListenersModule, VEventData} from './modules/eventlisteners'; // attaches event listeners
 import {datasetModule, VDatasetData} from './modules/dataset'; // handles dataset
+import {referencesModule, VReferenceData} from './modules/references'; // handles references to vnode
 import {h} from './h'; // helper function for creating vnodes
-export interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VPropsData, VStyleData, VEventData<VData>, VDatasetData {}
+export interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VPropsData, VStyleData, VEventData<VData>, VDatasetData, VReferenceData<VData> {}
 export const snabbdomModules: Module<VData>[] = [
   attributesModule(),
   classModule(document),
@@ -16,6 +17,7 @@ export const snabbdomModules: Module<VData>[] = [
   styleModule(window.requestAnimationFrame || setTimeout),
   eventListenersModule(document),
   datasetModule(document),
+  referencesModule(),
 ];
 // Init patch function with choosen modules
 const {read, patch} = init(snabbdomModules, document);

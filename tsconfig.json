@@ -22,6 +22,7 @@
         "src/modules/hero.ts",
         "src/modules/props.ts",
         "src/modules/style.ts",
+        "src/modules/references.ts",
         "src/h.ts",
         "src/hooks.ts",
         "src/module.ts",
