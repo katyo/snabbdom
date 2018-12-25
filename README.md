@@ -485,6 +485,15 @@ h('div', [
 ]);
 ```
 
+Each handler is called not only with the given arguments but also with the current event and vnode appended to the argument list. It also supports using multiple listeners per event by specifying an array of handlers:
+
+```javascript
+function stopPropagation(ev) { ev.stopPropagation() }
+function sendValue(func, ev, vnode) { func(vnode.elm.value) }
+
+h('a', { on:{ click:[[sendValue, console.log], stopPropagation] } });
+```
+
 Snabbdom allows swapping event handlers between renders. This happens without
 actually touching the event handlers attached to the DOM.
 

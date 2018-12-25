@@ -32,7 +32,7 @@ function invokeHandler<VData>(handler: any, vnode?: VNode<VEventData<VData>>, ev
     } else {
       // call multiple handlers
       for (let i = 0; i < handler.length; i++) {
-        invokeHandler(handler[i]);
+        invokeHandler(handler[i], vnode, event);
       }
     }
   }
