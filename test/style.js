@@ -4,7 +4,7 @@ var fakeRaf = require('fake-raf');
 var snabbdom = require('../snabbdom');
 fakeRaf.use();
 var vdom = snabbdom.init([
-  require('../modules/style').default(requestAnimationFrame),
+  require('../modules/style').default(),
 ], document);
 var read = vdom.read;
 var patch = vdom.patch;
@@ -114,6 +114,22 @@ describe('style', function() {
     fakeRaf.step();
     assert.equal(elm.style.fontSize, '20px');
   });
+  it('applies tranform as transition on remove', function(done) {
+	  var btn = h('button', { style: {
+	    transition: 'transform 0.5s',
+	    remove: { transform: 'translateY(100%)' }
+	  }}, ['A button']);
+	  var vnode1 = h('div.parent', {}, [btn]);
+	  var vnode2 = h('div.parent', {}, [null]);
+	  document.body.appendChild(elm);
+	  patch(vnode0, vnode1);
+	  patch(vnode1, vnode2);
+	  assert.strictEqual(document.querySelectorAll('button').length, 1);
+	  setTimeout(function () {
+	    assert.strictEqual(document.querySelectorAll('button').length, 0);
+	    done();
+	  }, 700);
+	});
   describe('using read()', function () {
     it('handles (ignoring) comment nodes', function() {
       var comment = document.createComment('yolo');

@@ -12,8 +12,13 @@ export interface VStyleData {
   style?: StylesData;
 }
 
-export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
+export function styleModule(
+  raf: (fn: () => void) => void = requestAnimationFrame,
+  gcs: (node: Node) => CSSStyleDeclaration = getComputedStyle,
+  doc: Document = document
+): Module<VStyleData> {
   // api
+  let reflowForced = false;
 
   function nextFrame(fn: () => void) {
     raf(() => {
@@ -39,11 +44,8 @@ export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
 
   function setStyle(elm: HTMLElement, name: string, val: string, next: boolean = false) {
     const fn = name[0] === '-' && name[1] === '-' ?
-      () => {
-        elm.style.setProperty(name, val);
-      } : () => {
-        (elm.style as any)[name] = val;
-      };
+      () => { elm.style.setProperty(name, val); } :
+      () => { (elm.style as any)[name] = val; };
 
     if (!next) {
       fn();
@@ -61,7 +63,7 @@ export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
   }
 
   function onTransEnd(elm: HTMLElement, names: string[], callback: () => void) {
-    const compStyle: CSSStyleDeclaration = getComputedStyle(elm as Element);
+    const compStyle: CSSStyleDeclaration = gcs(elm as Element);
     const props = (compStyle as any)['transition-property'].split(', ');
     let amount = 0;
     for (let i = 0; i < props.length; ++i) {
@@ -135,6 +137,10 @@ export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
       rm();
       return;
     }
+    if(!reflowForced) {
+	    gcs(doc.body).transform;
+	    reflowForced = true;
+	  }
     const elm = vnode.elm as HTMLElement,
       style = s.remove,
       applied: string[] = [];
@@ -146,8 +152,13 @@ export function styleModule(raf: (fn: () => void) => void): Module<VStyleData> {
     onTransEnd(elm, applied, rm);
   }
 
+  function forceReflow() {
+	  reflowForced = false;
+	}
+
   return {
     read: readStyle,
+    pre: forceReflow,
     create: updateStyle,
     update: updateStyle,
     destroy: applyDestroyStyle,
