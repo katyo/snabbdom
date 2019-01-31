@@ -59,8 +59,10 @@ export function h<VData extends VBaseData>(sel: string, b?: VData | VNodeChildre
 
   if (isDef(children)) {
     for (i = 0; i < children.length; ++i) {
-      if (isPrimitive(children[i])) children[i] =
-        vnode<VData>(undefined, undefined, undefined, children[i] as string, undefined);
+      const child = children[i];
+      if (isPrimitive(child)) children[i] =
+        vnode<VData>(undefined, undefined, undefined, child as string, undefined);
+      else if (child && child.elm) children[i] = { ...child, elm: undefined };
     }
   }
 

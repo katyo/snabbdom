@@ -1079,6 +1079,24 @@ describe('snabbdom', function() {
       assert.equal(result.length, 0);
     });
   });
+
+  describe('vnodes reusing', function() {
+    it('moving backward', function() {
+      var sharedNode = h('div', {}, 'Selected');
+      var vnode1 = h('div', [
+        h('div', {}, ['One']),
+        h('div', {}, ['Two']),
+        h('div', {}, [sharedNode]),
+      ]);
+      patch(vnode0, vnode1);
+      var vnode2 = h('div', [
+        h('div', {}, ['One']),
+        h('div', {}, [sharedNode]),
+        h('div', {}, ['Three']),
+      ]);
+      patch(vnode1, vnode2);
+    });
+  });
   
   describe('html rendering', function() {
     var renderer = require('../html');
