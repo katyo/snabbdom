@@ -1,6 +1,6 @@
 import {VNode, VKey} from '../vnode';
 import {Module} from '../module';
-import {isArray} from '../snabbdom';
+import {isArray} from '../utils';
 
 export type VNodeRef<VData, Tag extends VKey = 'vnode'> = { [T in Tag]?: VNode<VData> };
 

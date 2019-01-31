@@ -1,6 +1,6 @@
 import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from '../module';
-import {isDef} from '../snabbdom';
+import {isDef} from '../utils';
 
 export type Props = Record<string, any>;
 

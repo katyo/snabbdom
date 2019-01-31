@@ -1,6 +1,7 @@
 export * from './vnode';
 export * from './hooks';
 export * from './module';
+export * from './utils';
 export * from './snabbdom';
 export * from './modules/attributes';
 export * from './modules/class';

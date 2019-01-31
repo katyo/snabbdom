@@ -1,5 +1,5 @@
 import {vnode, VNode, VNodeChild, VNodes, VBaseData} from './vnode';
-import {isArray, isPrimitive, isDef} from './snabbdom';
+import {isArray, isPrimitive, isDef} from './utils';
 
 export type VNodeChildren<VData> = VNodeChild<VData> | VNodes<VData>;
 

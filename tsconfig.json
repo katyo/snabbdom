@@ -30,6 +30,7 @@
         "src/snabbdom.ts",
         "src/thunk.ts",
         "src/vnode.ts",
+        "src/utils.ts",
         "src/index.ts",
         "src/html/module.ts",
         "src/html/render.ts",

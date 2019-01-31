@@ -1,5 +1,5 @@
 import {VNode, VBaseData} from '../vnode';
-import {parseSel, isDef, buildKey, Selector, isPrimitive} from '../snabbdom';
+import {parseSel, isDef, buildKey, Selector, isPrimitive} from '../utils';
 import {Module} from './module';
 
 export interface WriteFn {
