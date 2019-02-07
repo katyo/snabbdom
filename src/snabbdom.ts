@@ -275,7 +275,7 @@ export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: 
 
       createElm(vnode, insertedVnodeQueue);
 
-      if (parent !== null) {
+      if (parent != null) {
         insertChild(parent, vnode.elm as Node, nextSibling(elm));
         removeVnodes(parent, [oldVnode], 0, 0);
       }
@@ -380,12 +380,12 @@ function getSelector(elm: Element): [string, VKey | void] {
   return [tag, undefined];
 }
 
-function setTextContent(node: Node, text: string | null): void {
-  node.textContent = text;
-}
-
 function getTextContent(node: Node): string | null {
   return node.textContent;
+}
+
+function setTextContent(node: Node, text: string | null): void {
+  node.textContent = text;
 }
 
 function isElement(node: Node): node is Element {

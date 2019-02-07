@@ -7,3 +7,4 @@ require('./thunk');
 require('./attributes');
 require('./references');
 require('./htmldomapi');
+require('./stubdom');

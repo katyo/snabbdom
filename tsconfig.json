@@ -32,6 +32,7 @@
         "src/vnode.ts",
         "src/utils.ts",
         "src/index.ts",
+        "src/stub.ts",
         "src/html/module.ts",
         "src/html/render.ts",
         "src/html/modules/attributes.ts",
