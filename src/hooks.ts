@@ -1,58 +1,60 @@
 import {VNode} from './vnode';
 
-export interface PreHook {
-  (): void;
+export type NoCtx = void;
+
+export interface PreHook<Ctx = NoCtx> {
+  (ctx: Ctx): void;
 }
 
-export interface InitHook<VData> {
-  (vNode: VNode<VData>): void;
+export interface InitHook<VData, Ctx = NoCtx> {
+  (vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface CreateHook<VData> {
-  (emptyVNode: VNode<VData>, vNode: VNode<VData>): void;
+export interface CreateHook<VData, Ctx = NoCtx> {
+  (emptyVNode: VNode<VData>, vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface InsertHook<VData> {
-  (vNode: VNode<VData>): void;
+export interface InsertHook<VData, Ctx = NoCtx> {
+  (vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface PrePatchHook<VData> {
-  (oldVNode: VNode<VData>, vNode: VNode<VData>): void;
+export interface PrePatchHook<VData, Ctx = NoCtx> {
+  (oldVNode: VNode<VData>, vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface UpdateHook<VData> {
-  (oldVNode: VNode<VData>, vNode: VNode<VData>): void;
+export interface UpdateHook<VData, Ctx = NoCtx> {
+  (oldVNode: VNode<VData>, vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface PostPatchHook<VData> {
-  (oldVNode: VNode<VData>, vNode: VNode<VData>): void;
+export interface PostPatchHook<VData, Ctx = NoCtx> {
+  (oldVNode: VNode<VData>, vNode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface DestroyHook<VData> {
-  (vNode: VNode<VData>): void;
+export interface DestroyHook<VData, Ctx = NoCtx> {
+  (vNode: VNode<VData>, rNode: VNode<VData> | void, ctx: Ctx): void;
 }
 
-export interface RemoveHook<VData> {
-  (vNode: VNode<VData>, removeCallback: () => void): void;
+export interface RemoveHook<VData, Ctx = NoCtx> {
+  (vNode: VNode<VData>, removeCallback: () => void, ctx: Ctx): void;
 }
 
-export interface PostHook {
-  (): void;
+export interface PostHook<Ctx = NoCtx> {
+  (ctx: Ctx): void;
 }
 
-export interface ReadHook<VData> {
-  (vnode: VNode<VData>): void;
+export interface ReadHook<VData, Ctx = NoCtx> {
+  (vnode: VNode<VData>, ctx: Ctx): void;
 }
 
-export interface Hooks<VData> {
-  pre?: PreHook;
-  init?: InitHook<VData>;
-  create?: CreateHook<VData>;
-  insert?: InsertHook<VData>;
-  prepatch?: PrePatchHook<VData>;
-  update?: UpdateHook<VData>;
-  postpatch?: PostPatchHook<VData>;
-  destroy?: DestroyHook<VData>;
-  remove?: RemoveHook<VData>;
-  post?: PostHook;
+export interface Hooks<VData, Ctx = NoCtx> {
+  pre?: PreHook<Ctx>;
+  init?: InitHook<VData, Ctx>;
+  create?: CreateHook<VData, Ctx>;
+  insert?: InsertHook<VData, Ctx>;
+  prepatch?: PrePatchHook<VData, Ctx>;
+  update?: UpdateHook<VData, Ctx>;
+  postpatch?: PostPatchHook<VData, Ctx>;
+  destroy?: DestroyHook<VData, Ctx>;
+  remove?: RemoveHook<VData, Ctx>;
+  post?: PostHook<Ctx>;
 }

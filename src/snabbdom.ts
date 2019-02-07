@@ -1,5 +1,5 @@
 /* global module, document, Node */
-import {Hooks} from './hooks';
+import {Hooks, InitHook, CreateHook, InsertHook, PrePatchHook, UpdateHook, PostPatchHook, DestroyHook, RemoveHook} from './hooks';
 import {Module, ModulesHooks, moduleHooks} from './module';
 import {vnode, VNode, VNodeQueue, VBaseData, VKey, VHooksData, emptyVNode} from './vnode';
 import {isArray, isPrimitive, isDef, selAttr, parseSel, buildSel, parseKey, buildKey} from './utils';
@@ -35,8 +35,10 @@ export interface VDOMAPI<VData> {
   patch: Patch<VData>;
 }
 
-export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], document: Document): VDOMAPI<VData> {
-  let i: number, j: number, cbs = {} as ModulesHooks<VData>;
+export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], document: Document): VDOMAPI<VData>;
+export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], document: Document, ctx: Ctx): VDOMAPI<VData>;
+export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], document: Document, ctx: Ctx = {} as Ctx): VDOMAPI<VData> {
+  let i: number, j: number, cbs = {} as ModulesHooks<VData, Ctx>;
 
   for (i = 0; i < moduleHooks.length; ++i) {
     const name = moduleHooks[i];
@@ -62,7 +64,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     let i: any, data = vnode.data;
     if (isDef(data)) {
       if (isDef(i = data.hook) && isDef(i = i.init)) {
-        i(vnode);
+        (i as InitHook<VData, Ctx>)(vnode, ctx);
         data = vnode.data;
       }
     }
@@ -75,7 +77,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     } else if (isDef(sel)) {
       const elm = vnode.elm = createElement(sel, vnode.key,
         isDef(data) ? (data as VData).ns : undefined);
-      for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyVNode as VNode<VData>, vnode);
+      for (i = 0; i < cbs.create.length; ++i) cbs.create[i](emptyVNode as VNode<VData>, vnode, ctx);
       if (isArray(children)) {
         for (i = 0; i < children.length; ++i) {
           const ch = children[i];
@@ -88,7 +90,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       }
       i = (vnode.data as VData).hook; // Reuse variable
       if (isDef(i)) {
-        if (i.create) i.create(emptyVNode, vnode);
+        if (i.create) (i.create as CreateHook<VData, Ctx>)(emptyVNode as VNode<VData>, vnode, ctx);
         if (i.insert) insertedVnodeQueue.push(vnode);
       }
     } else {
@@ -116,8 +118,8 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   function invokeDestroyHook(vnode: VNode<VData>) {
     let i: any, j: number, data = vnode.data;
     if (isDef(data)) {
-      if (isDef(i = data.hook) && isDef(i = i.destroy)) i(vnode);
-      for (i = 0; i < cbs.destroy.length; ++i) cbs.destroy[i](vnode);
+      if (isDef(i = data.hook) && isDef(i = i.destroy)) (i as DestroyHook<VData, Ctx>)(vnode, undefined, ctx);
+      for (i = 0; i < cbs.destroy.length; ++i) cbs.destroy[i](vnode, undefined, ctx);
       if (isDef(vnode.children)) {
         for (j = 0; j < vnode.children.length; ++j) {
           i = vnode.children[j];
@@ -140,9 +142,9 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
           invokeDestroyHook(ch);
           listeners = cbs.remove.length + 1;
           rm = createRmCb(ch.elm as Node, listeners);
-          for (i = 0; i < cbs.remove.length; ++i) cbs.remove[i](ch, rm);
+          for (i = 0; i < cbs.remove.length; ++i) cbs.remove[i](ch, rm, ctx);
           if (isDef(i = ch.data) && isDef(i = i.hook) && isDef(i = i.remove)) {
-            i(ch, rm);
+            (i as RemoveHook<VData, Ctx>)(ch, rm, ctx);
           } else {
             rm();
           }
@@ -230,16 +232,16 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
   function patchVnode(oldVnode: VNode<VData>, vnode: VNode<VData>, insertedVnodeQueue: VNodeQueue<VData>) {
     let i: any, hook: any;
     if (isDef(i = vnode.data) && isDef(hook = i.hook) && isDef(i = hook.prepatch)) {
-      i(oldVnode, vnode);
+      (i as PrePatchHook<VData, Ctx>)(oldVnode, vnode, ctx);
     }
     const elm = vnode.elm = (oldVnode.elm as Node);
     let oldCh = oldVnode.children;
     let ch = vnode.children;
     if (oldVnode === vnode) return;
     if (isDef(vnode.data)) {
-      for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode);
+      for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode, ctx);
       i = vnode.data.hook;
-      if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode);
+      if (isDef(i) && isDef(i = i.update)) (i as UpdateHook<VData, Ctx>)(oldVnode, vnode, ctx);
     }
     if (!isDef(vnode.text)) {
       if (isDef(oldCh) && isDef(ch)) {
@@ -256,14 +258,14 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
       setTextContent(elm, vnode.text as string);
     }
     if (isDef(hook) && isDef(i = hook.postpatch)) {
-      i(oldVnode, vnode);
+      (i as PostPatchHook<VData, Ctx>)(oldVnode, vnode, ctx);
     }
   }
 
   function patch(oldVnode: VNode<VData>, vnode: VNode<VData>): VNode<VData> {
     let i: number;
     const insertedVnodeQueue: VNodeQueue<VData> = [];
-    for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i]();
+    for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i](ctx);
 
     if (sameVnode(oldVnode, vnode)) {
       patchVnode(oldVnode, vnode, insertedVnodeQueue);
@@ -280,9 +282,9 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
     }
 
     for (i = 0; i < insertedVnodeQueue.length; ++i) {
-      (((insertedVnodeQueue[i].data as VData).hook as Hooks<VData>).insert as any)(insertedVnodeQueue[i]);
+      (((insertedVnodeQueue[i].data as VHooksData<VData, Ctx>).hook as Hooks<VData, Ctx>).insert as InsertHook<VData, Ctx>)(insertedVnodeQueue[i], ctx);
     }
-    for (i = 0; i < cbs.post.length; ++i) cbs.post[i]();
+    for (i = 0; i < cbs.post.length; ++i) cbs.post[i](ctx);
     return vnode;
   };
 
@@ -299,7 +301,7 @@ export function init<VData extends VBaseData & VHooksData<VData>>(modules: Modul
         children.push(read(child));
       }
       const vn = vnode(sel, data, children, undefined, node);
-      for (let i = 0; i < cbs.read.length; ++i) cbs.read[i](vn);
+      for (let i = 0; i < cbs.read.length; ++i) cbs.read[i](vn, ctx);
       return vn;
     } else if (isText(node)) {
       text = getTextContent(node) as string;

@@ -1,4 +1,4 @@
-import {Hooks} from './hooks';
+import {Hooks, NoCtx} from './hooks';
 
 export type VKey = string | number;
 
@@ -7,8 +7,8 @@ export interface VBaseData {
   ns?: string; // for SVGs
 }
 
-export interface VHooksData<VData> {
-  hook?: Hooks<VData>;
+export interface VHooksData<VData, Ctx = NoCtx> {
+  hook?: Hooks<VData, Ctx>;
 }
 
 export interface VNode<VData> {
