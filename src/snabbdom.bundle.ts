@@ -14,7 +14,7 @@ export const snabbdomModules: Module<VData>[] = [
   attributesModule(),
   classModule(document),
   propsModule(),
-  styleModule(window.requestAnimationFrame || setTimeout),
+  styleModule(document, window.requestAnimationFrame || ((fn: () => void) => { setTimeout(fn, 16); })),
   eventListenersModule(document),
   datasetModule(document),
   referencesModule(),

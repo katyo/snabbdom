@@ -13,9 +13,9 @@ export interface VStyleData {
 }
 
 export function styleModule(
+  doc: Document = document,
   raf: (fn: () => void) => void = requestAnimationFrame,
-  gcs: (node: Node) => CSSStyleDeclaration = getComputedStyle,
-  doc: Document = document
+  gcs: (node: Node) => CSSStyleDeclaration = getComputedStyle
 ): Module<VStyleData> {
   // api
   let reflowForced = false;

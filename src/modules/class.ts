@@ -17,14 +17,14 @@ type Api = [
   /*removeClass*/(elm: Element, name: string) => void
 ];
 
-export function classModule(document: Document): Module<VClassData> {
+export function classModule(doc: Document = document): Module<VClassData> {
   /* api */
 
   function getClasses(elm: Element): string[] {
     return elm.className.split(/ /);
   }
 
-  const [addClass, removeClass]: Api = !document.createElement('p').classList ? [
+  const [addClass, removeClass]: Api = !doc.createElement('p').classList ? [
     (elm: Element, name: string) => {
       const names = elm.className.split(/ /);
       if (names.indexOf(name) == -1) {

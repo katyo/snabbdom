@@ -71,17 +71,17 @@ type Api = [
   /*removeEvent*/(elm: Element, name: string, fn: (event: Event) => void) => void
 ];
 
-export function eventListenersModule<VData>(document: Document): Module<VEventData<VData>> {
+export function eventListenersModule<VData>(doc: Document = document): Module<VEventData<VData>> {
   // api
 
-  const [addEvent, removeEvent]: Api = document.addEventListener ? [
+  const [addEvent, removeEvent]: Api = doc.addEventListener ? [
     (elm: Element, name: string, fn: (event: Event) => void) => {
       elm.addEventListener(name, fn, false);
     },
     (elm: Element, name: string, fn: (event: Event) => void) => {
       elm.removeEventListener(name, fn, false);
     }
-  ] : document.attachEvent ? [
+  ] : doc.attachEvent ? [
     (elm: Element, name: string, fn: (event: Event) => void) => {
       elm.attachEvent(`on${name}`, fn);
     },
@@ -92,7 +92,7 @@ export function eventListenersModule<VData>(document: Document): Module<VEventDa
         (elm: Element, name: string, fn: (event: Event) => void) => {
           (elm as any)[`on${name}`] = fn;
         },
-        (elm: Element, name: string, fn: (event: Event) => void) => {
+        (elm: Element, name: string, _fn: (event: Event) => void) => {
           delete (elm as any)[`on${name}`];
         }
       ];

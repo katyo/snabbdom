@@ -35,9 +35,9 @@ export interface VDOMAPI<VData> {
   patch: Patch<VData>;
 }
 
-export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], document: Document): VDOMAPI<VData>;
-export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], document: Document, ctx: Ctx): VDOMAPI<VData>;
-export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], document: Document, ctx: Ctx = {} as Ctx): VDOMAPI<VData> {
+export function init<VData extends VBaseData & VHooksData<VData>>(modules: Module<VData>[], doc?: Document): VDOMAPI<VData>;
+export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], doc: Document, ctx: Ctx): VDOMAPI<VData>;
+export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: Module<VData>[], doc: Document = document, ctx: Ctx = {} as Ctx): VDOMAPI<VData> {
   let i: number, j: number, cbs = {} as ModulesHooks<VData, Ctx>;
 
   for (i = 0; i < moduleHooks.length; ++i) {
@@ -319,8 +319,8 @@ export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: 
   function createElement(sel: string, key?: VKey, nsUri?: string): Element {
     const {tag, id, cls} = parseSel(sel);
     const elm = nsUri ?
-      document.createElementNS(nsUri, tag as string) :
-      document.createElement(tag as string);
+      doc.createElementNS(nsUri, tag as string) :
+      doc.createElement(tag as string);
     if (id) elm.setAttribute('id', id);
     if (cls) elm.setAttribute('class', cls.join(' '));
     if (id || cls || isDef(key)) { // preserve original selector
@@ -334,11 +334,11 @@ export function init<VData extends VBaseData & VHooksData<VData>, Ctx>(modules: 
   }
 
   function createTextNode(text: string): Text {
-    return document.createTextNode(text);
+    return doc.createTextNode(text);
   }
 
   function createComment(text: string): Comment {
-    return document.createComment(text);
+    return doc.createComment(text);
   }
 }
 

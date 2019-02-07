@@ -20,12 +20,12 @@ type Api = [
   /*removeData*/(elm: HTMLElement, key: string) => void
 ];
 
-export function datasetModule(document: Document): Module<VDatasetData> {
+export function datasetModule(doc: Document = document): Module<VDatasetData> {
   // api
 
   const [
     listDatas, getData, setData, removeData
-  ]: Api = document.createElement('p').dataset ? [
+  ]: Api = doc.createElement('p').dataset ? [
     (elm: HTMLElement) => Object.keys(elm.dataset),
     (elm: HTMLElement, key: string) => elm.dataset[key] as string, // because we gets only existing datas
     (elm: HTMLElement, key: string, val: string) => {elm.dataset[key] = val},
