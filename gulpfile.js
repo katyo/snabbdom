@@ -48,32 +48,8 @@ gulp.task('bundle:module:eventlisteners', function() {
   return standalone('snabbdom_eventlisteners', './modules/eventlisteners.js')
 })
 
-gulp.task('bundle:client:domapi', function() {
-  return standalone('snabbdom_domapi', './client/domapi.js')
-})
-
-gulp.task('bundle:client:attributes', function() {
-  return standalone('snabbdom_attributesapi', './client/attributes.js')
-})
-
-gulp.task('bundle:client:class', function() {
-  return standalone('snabbdom_classapi', './client/class.js')
-})
-
-gulp.task('bundle:client:dataset', function() {
-  return standalone('snabbdom_datasetapi', './client/dataset.js')
-})
-
-gulp.task('bundle:client:props', function() {
-  return standalone('snabbdom_propsapi', './client/props.js')
-})
-
-gulp.task('bundle:client:style', function() {
-  return standalone('snabbdom_styleapi', './client/style.js')
-})
-
-gulp.task('bundle:client:eventlisteners', function() {
-  return standalone('snabbdom_eventlistenersapi', './client/eventlisteners.js')
+gulp.task('bundle:module:references', function() {
+  return standalone('snabbdom_references', './modules/references.js')
 })
 
 gulp.task('bundle', [
@@ -86,13 +62,7 @@ gulp.task('bundle', [
   'bundle:module:props',
   'bundle:module:style',
   'bundle:module:eventlisteners',
-  'bundle:client:domapi',
-  'bundle:client:attributes',
-  'bundle:client:class',
-  'bundle:client:dataset',
-  'bundle:client:props',
-  'bundle:client:style',
-  'bundle:client:eventlisteners',
+  'bundle:module:references',
 ])
 
 gulp.task('compress', ['bundle'], function() {

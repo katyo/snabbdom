@@ -77,13 +77,13 @@ var propsApi = require('snabbdom/client/props').default;
 var styleApi = require('snabbdom/client/style').default;
 var eventApi = require('snabbdom/client/eventlisteners').default;
 var vdom = snabbdom.init([ // Init patch function with chosen modules
-  require('snabbdom/modules/attributes').default(attrsApi), // handles attributes
-  require('snabbdom/modules/class').default(classApi), // makes it easy to toggle classes
-  require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
-  require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
-  require('snabbdom/modules/eventlisteners').default(eventApi), // attaches event listeners
+  require('snabbdom/modules/attributes').default(), // handles attributes
+  require('snabbdom/modules/class').default(), // makes it easy to toggle classes
+  require('snabbdom/modules/props').default(), // for setting properties on DOM elements
+  require('snabbdom/modules/style').default(), // handles styling on elements with support for animations
+  require('snabbdom/modules/eventlisteners').default(), // attaches event listeners
   require('snabbdom/modules/references').default(), // back references to vnodes
-], htmlDomApi(document));
+]);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes
@@ -135,12 +135,14 @@ to patching DOM using the previous and the next virtual nodes.
 var vdom = snabbdom.init([
   require('snabbdom/modules/class').default(classApi),
   require('snabbdom/modules/style').default(styleApi),
-], htmlDomApi(document));
+], document, context);
 var read = vdom.read;
 var patch = vdom.patch;
 ```
 
-The `domApi` parameter is required and can be used either _client/domapi_ for patching DOM tree in browsers or _server/domapi_ to get HTML output on server.
+The `document` and `context` parameters are optional.
+You can use different DOM APIs by providing corresponding document object.
+Also you can set context which will be available in hooks.
 
 ### `read`
 
@@ -156,11 +158,11 @@ Especially good for patching over an pre-existing, server-side generated content
 ```javascript
 var snabbdom = require('snabbdom');
 var vdom = snabbdom.init([ // Init patch function with chosen modules
-  require('snabbdom/modules/class').default(classApi), // makes it easy to toggle classes
-  require('snabbdom/modules/props').default(propsApi), // for setting properties on DOM elements
-  require('snabbdom/modules/style').default(styleApi), // handles styling on elements with support for animations
-  require('snabbdom/modules/eventlisteners').default(eventListenersApi), // attaches event listeners
-], htmlDomApi(document));
+  require('snabbdom/modules/class').default(), // makes it easy to toggle classes
+  require('snabbdom/modules/props').default(), // for setting properties on DOM elements
+  require('snabbdom/modules/style').default(), // handles styling on elements with support for animations
+  require('snabbdom/modules/eventlisteners').default(), // attaches event listeners
+]);
 var read = vdom.read;
 var patch = vdom.patch;
 var h = require('snabbdom/h').default; // helper function for creating vnodes
@@ -217,18 +219,18 @@ desired points in the life of a virtual node.
 
 #### Overview
 
-| Name        | Triggered when                                     | Arguments to callback   |
-| ----------- | --------------                                     | ----------------------- |
-| `pre`       | the patch process begins                           | none                    |
-| `init`      | a vnode has been added                             | `vnode`                 |
-| `create`    | a DOM element has been created based on a vnode    | `emptyVnode, vnode`     |
-| `insert`    | an element has been inserted into the DOM          | `vnode`                 |
-| `prepatch`  | an element is about to be patched                  | `oldVnode, vnode`       |
-| `update`    | an element is being updated                        | `oldVnode, vnode`       |
-| `postpatch` | an element has been patched                        | `oldVnode, vnode`       |
-| `destroy`   | an element is directly or indirectly being removed | `vnode`                 |
-| `remove`    | an element is directly being removed from the DOM  | `vnode, removeCallback` |
-| `post`      | the patch process is done                          | none                    |
+| Name        | Triggered when                                     | Arguments to callback                |
+| ----------- | --------------                                     | -----------------------              |
+| `pre`       | the patch process begins                           | `context`                            |
+| `init`      | a vnode has been added                             | `vnode`, `context`                   |
+| `create`    | a DOM element has been created based on a vnode    | `emptyVnode`, `vnode`, `context`     |
+| `insert`    | an element has been inserted into the DOM          | `vnode`, `context`                   |
+| `prepatch`  | an element is about to be patched                  | `oldVnode`, `vnode`, `context`       |
+| `update`    | an element is being updated                        | `oldVnode`, `vnode`, `context`       |
+| `postpatch` | an element has been patched                        | `oldVnode`, `vnode`, `context`       |
+| `destroy`   | an element is directly or indirectly being removed | `vnode`, `undefined`, `context`      |
+| `remove`    | an element is directly being removed from the DOM  | `vnode`, `removeCallback`, `context` |
+| `post`      | the patch process is done                          | `context`                            |
 
 The following hooks are available for modules: `pre`, `create`,
 `update`, `destroy`, `remove`, `post`.
@@ -309,7 +311,7 @@ animate the disappearance of the removed element's children.
 Modules works by registering global listeners for [hooks](#hooks). A module is simply a dictionary mapping hook names to functions.
 
 ```javascript
-function myModule(api) {
+function myModule(...params) {
   return {
     create: function(oldVnode, vnode) {
       // invoked whenever a new virtual node is created
@@ -794,9 +796,9 @@ import {classModule, VClassData} from 'snabbdom/modules/class';
 interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData {}
 
 let vdom = init<VData>([
-  attributesModule(attributesApi),
-  classModule(classApi)
-], domApi);
+  attributesModule(),
+  classModule()
+]);
 ```
 
 ### The `toVNode` merged into core
@@ -812,14 +814,14 @@ interface VDOMAPI<VData> {
 }
 
 interface Init<VData> {
-  init(modules: Module<VData>[], api: DOMAPI): VDOMAPI<VData>;
+  (modules: Module<VData>[], doc?: Document): VDOMAPI<VData>;
 }
 ```
 
 The proper way of bootstrapping in browser applications:
 
 ```typescript
-const {read, patch} = init(modules, domApi);
+const {read, patch} = init(modules);
 
 function render(newVNode: VNode) {
   patch(vnode, newVNode);
@@ -833,31 +835,23 @@ let vnode = read(appNode);
 render(appRender());
 ```
 
-### Reorganized codebase
+### Using other DOM APIs
 
-Quite simple and tiny module _snabbdom/is_ now is away, the exported utilities merged into core (_snabbdom_).
-The _core_ also exports `isDef` which was converted into type guard:
+I introduced optional `document` parameter of `init()` function to make it possible to use any other DOM libraries (like _jsdom_, _dom.js_, _cheerio_, _domino_ and etc.) both on client and server.
 
-In order to avoid unnecessary dependencies the API declarations moved to the modules where it is actually used.
-Particularly the `DOMAPI` interface declared in core, i.e. into _snabbdom_ itself.
+Modules also obtains additional parameters:
 
-The module _snabbdom/htmldomapi_ moved to _client/domapi_. So the server-side `DOMAPI` implementation will be at _server/domapi_.
-
-### Required `domApi` argument
-
-The second optional argument of `init` call (`domApi`) now is required.
-
-This allows to eliminate dependency from _snabbdom/htmldomapi_ when it redundant, for example, on server where HTML output is used.
-
-### Instantiating `htmlDomApi` with custom `document`
-
-Now the `htmlDomApi` is a function which required `document` as argument to make it possible to use any other DOM libraries (like _jsdom_, _dom.js_, _cheerio_, _domino_ and etc.) both on client and server.
-
-### Own APIs for modules
-
-To finally isolate platform-dependent code now the modules has own APIs to interact with DOM.
-
-This allow us to have two different API implementations: one to interact with document tree nodes in browsers and another to work with much simpler document tree on server.
+```typescript
+attributes(ignore: RegExp = /^(?:(?:id|class|style)$|data\-)/)
+class(doc: Document = document)
+dataset(doc: Document = document)
+eventlisteners(doc: Document = document)
+props()
+references()
+style(doc: Document = document,
+      raf: (fn: () => void) => void = requestAnimationFrame,
+      gcs: (node: Node) => CSSStyleDeclaration = getComputedStyle)
+```
 
 ### The proper way of usage
 
@@ -874,34 +868,30 @@ import {classModule, VClassData} from 'snabbdom/modules/class';
 import {styleModule, VStyleData} from 'snabbdom/modules/class';
 import {eventListenersModule, VEventData} from 'snabbdom/modules/eventlisteners';
 
-// Importing browser APIs
-import htmlDomApi from 'snabbdom/client/domapi';
-import attributesApi from 'snabbdom/client/attributes';
-import classApi from 'snabbdom/client/class';
-import styleApi from 'snabbdom/client/style';
-import eventListenersApi from 'snabbdom/client/eventlisteners';
-
 interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VStyleData {}
 
 const {read, patch} = init<VData>([
-  attributesModule(attributesApi),
-  classModule(classApi),
-  styleModule(styleApi),
-  eventListenersModule(eventListenersApi),
-], htmlDomApi(document));
+  attributesModule(),
+  classModule(),
+  styleModule(),
+  eventListenersModule(),
+]);
 
 // bootstrap
 let vnode = read(document.documentElement);
 
-// render
-const newVNode = appRender();
-
-// patch
-patch(vnode, newVNode);
-vnode = newVNode;
+// running loop
+{
+    // render
+    const newVNode = appRender();
+    
+    // patch
+    patch(vnode, newVNode);
+    vnode = newVNode;
+}
 ```
 
-And the usage on server environment will be like so:
+Usage example with another DOM API (`jsdom`):
 
 ```typescript
 import {VBaseData, VHooksData} from 'snabbdom/vnode';
@@ -911,39 +901,80 @@ import {init} from 'snabbdom';
 // Importing modules
 import {attributesModule, VAttrsData} from 'snabbdom/modules/attributes';
 import {classModule, VClassData} from 'snabbdom/modules/class';
+import {styleModule, VStyleData} from 'snabbdom/modules/class';
+import {eventListenersModule, VEventData} from 'snabbdom/modules/eventlisteners';
 
-// We don't need render style property to HTML
-import {VStyleData} from 'snabbdom/modules/class';
-
-// We couldn't have event listeners in HTML
-import {VEventData} from 'snabbdom/modules/eventlisteners';
-
-// Importing html APIs
-import htmlDomApi, {render} from 'snabbdom/server/domapi';
-import attributesApi from 'snabbdom/server/attributes';
-import classApi from 'snabbdom/server/class';
+// Importing DOM API (optional)
+import { JSDOM } from 'jsdom';
+const { window, document } = new JSDOM();
 
 interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VStyleData {}
 
 const {read, patch} = init<VData>([
-  attributesModule(attributesApi),
-  classModule(classApi),
-], htmlDomApi);
+  attributesModule(document),
+  classModule(document),
+  styleModule(document, window.requestAnimationFrame, window.getComputedStyle),
+  eventListenersModule(document),
+], document);
 
-const documentElement = htmlDomApi.createElement('html');
+// bootstrap
+let vnode = read(document.documentElement);
+
+// running loop
+{
+    // render
+    const newVNode = appRender();
+
+    // patch
+    patch(vnode, newVNode);
+    vnode = newVNode;
+}
+```
+
+Running on server environment using stub DOM API and HTML renderer:
+
+```typescript
+import {VBaseData, VHooksData} from 'snabbdom/vnode';
+
+import {init} from 'snabbdom';
+import {document} from 'snabbdom/stub';
+import {init as renderInit, streamWriter} from 'snabbdom/html';
+
+// Importing module's types
+import {VAttrsData} from 'snabbdom/modules/attributes';
+import {VClassData} from 'snabbdom/modules/class';
+import {VStyleData} from 'snabbdom/modules/style';
+import {VEventData} from 'snabbdom/modules/eventlisteners';
+
+// Importing modules
+import {attributesModule} from 'snabbdom/html/modules/attributes';
+import {classModule} from 'snabbdom/html/modules/class';
+
+const render = initRender([attributesModule, classModule]);
+
+interface VData extends VBaseData, VHooksData<VData>, VAttrsData, VClassData, VStyleData {}
+
+// It is important we shouldn't load any modules here
+const {read, patch} = init<VData>([], document);
+
+const documentElement = document.createElement('html');
 
 // bootstrap
 let vnode = read(documentElement);
 
-// render
-const newVNode = appRender();
-
-// patch
-patch(vnode, newVNode);
-vnode = newVNode;
+// running loop
+{
+    // render
+    const newVNode = appRender();
+    
+    // patch
+    patch(vnode, newVNode);
+    vnode = newVNode;
+}
 
 // output
-const html = '<!DOCTYPE html>' + render(documentElement);
+res.write('<!DOCTYPE html>');
+render(vnode, streamWriter(res));
 ```
 
 ## Structuring applications
