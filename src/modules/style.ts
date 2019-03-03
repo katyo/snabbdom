@@ -20,46 +20,47 @@ export function styleModule(
   // api
   let reflowForced = false;
 
-  function nextFrame(fn: () => void) {
-    raf(() => {
-      raf(fn);
-    });
+  interface NextFrame {
+    elm: HTMLElement;
+    name: string;
+    val: string;
   }
 
-  function listStyle(elm: HTMLElement): string[] {
-    const style = elm.getAttribute('style');
-    const names: string[] = [];
-    if (style) {
-      for (const pair of style.split(/\s*;\s*/)) {
-        const m = pair.match(/^[^:\s]+/);
-        if (m) names.push(m[0]);
-      }
+  const next_frame: NextFrame[] = [];
+
+  function setFrameStyles() {
+    let frame: NextFrame | undefined;
+    for (; frame = next_frame.shift(); ) {
+      setStyle(frame.elm, frame.name, frame.val);
     }
-    return names;
   }
 
-  function getStyle(elm: HTMLElement, name: string): string {
-    return (elm.style as any)[name];
+  function scheduleNextFrame() {
+    raf(setFrameStyles);
   }
 
-  function setStyle(elm: HTMLElement, name: string, val: string, next: boolean = false) {
-    const fn = name[0] === '-' && name[1] === '-' ?
-      () => { elm.style.setProperty(name, val); } :
-      () => { (elm.style as any)[name] = val; };
-
-    if (!next) {
-      fn();
-    } else {
-      nextFrame(fn);
+  function getStyles(elm: HTMLElement): Styles {
+    const styles = {} as Styles;
+    for (let i = 0; i < elm.style.length; i++) {
+      const name = elm.style.item(i);
+      styles[name] = elm.style.getPropertyValue(name);
     }
+    return styles;
+  }
+
+  function setStyle(elm: HTMLElement, name: string, val: string) {
+    elm.style.setProperty(name, val);
+  }
+
+  function setStyleNextFrame(elm: HTMLElement, name: string, val: string) {
+    if (!next_frame.length) {
+      raf(scheduleNextFrame);
+    }
+    next_frame.push({ elm, name, val });
   }
 
   function removeStyle(elm: HTMLElement, name: string) {
-    if (name[0] == '-' && name[1] == '-') {
-      elm.style.removeProperty(name);
-    } else {
-      (elm.style as any)[name] = '';
-    }
+    elm.style.removeProperty(name);
   }
 
   function onTransEnd(elm: HTMLElement, names: string[], callback: () => void) {
@@ -78,13 +79,7 @@ export function styleModule(
   // module
 
   function readStyle(vnode: VNode<VStyleData>) {
-    const elm = vnode.elm as HTMLElement;
-    const keys = listStyle(elm);
-    const style: StylesData = {};
-    for (const key of keys) {
-      style[key] = getStyle(elm, key);
-    }
-    (vnode.data as VStyleData).style = style;
+    (vnode.data as VStyleData).style = getStyles(vnode.elm as HTMLElement);
   }
 
   function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>) {
@@ -112,7 +107,7 @@ export function styleModule(
         for (let name2 in style.delayed) {
           cur = style.delayed[name2];
           if (!oldHasDel || cur !== (oldStyle.delayed as any)[name2]) {
-            setStyle(elm, name2, cur, true);
+            setStyleNextFrame(elm, name2, cur);
           }
         }
       } else if (name !== 'remove' && cur !== oldStyle[name]) {
