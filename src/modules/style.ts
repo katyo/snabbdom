@@ -1,7 +1,8 @@
 import {VNode, emptyVData as empty} from '../vnode';
 import {Module} from '../module';
 
-export type Styles = Record<string, string>;
+export type StylesFields = Exclude<{ [K in keyof CSSStyleDeclaration]: CSSStyleDeclaration[K] extends Function ? never : K }[keyof CSSStyleDeclaration], number | 'length' | 'parentRule'>;
+export type Styles = { [K in StylesFields]: string } & { [name: string]: string };
 
 export type StylesData = Styles & {
   delayed?: Styles
@@ -84,14 +85,14 @@ export function styleModule(
 
   function updateStyle(oldVnode: VNode<VStyleData>, vnode: VNode<VStyleData>) {
     const elm = vnode.elm as HTMLElement;
-    let cur: any, name: string,
+    let cur: string, name: string,
       {style: oldStyle} = oldVnode.data as VStyleData,
       {style} = vnode.data as VStyleData;
 
     if (!oldStyle && !style) return;
     if (oldStyle === style) return;
-    oldStyle = oldStyle || empty;
-    style = style || empty;
+    oldStyle = oldStyle || empty as StylesData;
+    style = style || empty as StylesData;
 
     const oldHasDel = 'delayed' in oldStyle;
 
